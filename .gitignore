@@ -1,0 +1,20 @@
+front-end/node_modules/
+front-end/.env.enc
+
+donations_manage/node_modules/
+donations_manage/bin/
+donations_manage/cache/
+donations_manage/artifacts/
+donations_manage/deployments/
+# TypeChain files
+donations_manage/typechain
+donations_manage/typechain-types
+# solidity-coverage files
+donations_manage/coverage
+donations_manage/coverage.json
+# Hardhat Ignition default folder for deployments against a local node
+donations_manage/ignition/deployments/chain-31337
+
+backend-end/logs/
+
+.vscode/

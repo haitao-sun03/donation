@@ -1,0 +1,56 @@
+db:
+  host: localhost
+  port: 3307
+  user: root
+  password: 123456
+  dbname: campaign
+  sslmode: disable
+
+redis:
+  address: localhost:6379
+  password: ""
+  db: 0
+
+logging:
+  level: info
+  format: text
+  outputs:
+    - type: file
+      level: debug
+      filename: "20060102_debug.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: file
+      level: info
+      filename: "20060102_info.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: file
+      level: warn
+      filename: "20060102_warn.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: file
+      level: error
+      filename: "20060102_error.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: console
+  
+geth:
+  wsAddress: "ws://localhost:8545"
+  address: "https://localhost:8545"
+  keystorePath: "/geth/dev/keystore"
+  donationContract:
+    address: "0xA03384C52E88b60cecc00EEF44f827caECe072b5"
+    abiPath: "abi/donation.abi"
+  nftContractAddress: "xxx"
+

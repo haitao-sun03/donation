@@ -1,0 +1,117 @@
+.donation-home {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  background: #1e293b;
+  color: #f3f4f6;
+}
+
+.hero-section {
+  text-align: center;
+  padding: 6rem 2rem;
+  margin-bottom: 4rem;
+  background: #334155;
+  border-radius: 20px;
+  border: 1px solid #475569;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-section p {
+  font-size: 1.25rem;
+  color: #d1d5db;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.features-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.feature-card {
+  background: #334155;
+  padding: 2.5rem;
+  border-radius: 20px;
+  border: 1px solid #475569;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 30px rgba(0, 114, 255, 0.2);
+  border-color: rgba(0, 114, 255, 0.5);
+}
+
+.icon-container {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+}
+
+.feature-icon {
+  color: white;
+  font-size: 2rem;
+}
+
+.feature-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.feature-card p {
+  color: #d1d5db;
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+.campaign-input {
+  background: #334155;
+  border: 1px solid #475569;
+  border-radius: 20px;
+  padding: 1rem;
+  color: #d1d5db;
+  font-size: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.campaign-input:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 4rem 1rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-section p {
+    font-size: 1rem;
+  }
+  
+  .features-section {
+    grid-template-columns: 1fr;
+  }
+}
