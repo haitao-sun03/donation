@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
+import { Button } from '@mui/material'
 
 export default function ConnectWallet({ onConnect }) {
   const [error, setError] = useState(null)
@@ -86,9 +87,24 @@ export default function ConnectWallet({ onConnect }) {
 
   return (
     <div className="connect-wallet">
-      <button onClick={connect}>
-        {account ? 'Switch Wallet' : 'Connect Wallet'}
-      </button>
+      <Button
+        variant="contained"
+        onClick={connect}
+        sx={{
+          background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '12px',
+          fontWeight: 600,
+          '&:hover': {
+            background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
+            transform: 'translateY(-1px)',
+            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)',
+          },
+        }}
+      >
+        Connect Wallet
+      </Button>
       {error && <p className="error">{error}</p>}
     </div>
   )

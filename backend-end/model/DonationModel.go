@@ -13,6 +13,7 @@ type DonationModel struct {
 	Donor      string    `gorm:"type:varchar(42);index:idx_campaign_donor,unique"` // 以太坊地址长度: Ethereum addresses are typically 42 characters long including '0x'
 	Amount     string    `gorm:"type:varchar(78)"`                                 // 支持大整数（最长78位）
 	BlockTime  time.Time `gorm:"index"`
+	IsRefund   uint8     `gorm:"type:int;not null;default:0"`
 }
 
 func (DonationModel) TableName() string {

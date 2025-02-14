@@ -1,3 +1,4 @@
+import { useInView } from 'react-intersection-observer';
 import React, { useState, useEffect, useRef } from 'react'
 import { ethers } from 'ethers'
 import { contractAddresses } from '../main.jsx'
@@ -27,6 +28,16 @@ import {
   Chip
 } from '@mui/material'
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 function formatDuration(seconds) {
   const sec = Number(seconds)
@@ -40,6 +51,73 @@ function formatDuration(seconds) {
   return `${Math.floor(sec / 86400)} days`
 }
 
+// 添加自定义主题
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#6366f1',
+    },
+    secondary: {
+      main: '#ec4899',
+    },
+    background: {
+      default: '#0f172a',
+      paper: '#1e293b',
+    },
+    text: {
+      primary: '#f8fafc',
+      secondary: '#94a3b8',
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(30, 41, 59, 0.8)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(99, 102, 241, 0.1)',
+          borderRadius: '16px',
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          background: 'rgba(30, 41, 59, 0.95)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(99, 102, 241, 0.1)',
+          borderRadius: '16px',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: '12px',
+          textTransform: 'none',
+          fontWeight: 600,
+          padding: '8px 16px',
+        },
+        contained: {
+          background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
+          },
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+        },
+      },
+    },
+  },
+});
+
 export default function DonationsManage({ provider, signer }) {
   const [campaigns, setCampaigns] = useState([])
   const [loading, setLoading] = useState(false)
@@ -47,6 +125,44 @@ export default function DonationsManage({ provider, signer }) {
   const [txDialogOpen, setTxDialogOpen] = useState(false)
   const [txStatus, setTxStatus] = useState('')
   const [txHash, setTxHash] = useState('')
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filterStarter, setFilterStarter] = useState('');
+  const [filterStatus, setFilterStatus] = useState(-1);
+  const [donationDetailsOpen, setDonationDetailsOpen] = useState(false);
+  const [currentDonationDetails, setCurrentDonationDetails] = useState([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [donationPage, setDonationPage] = useState(1);
+  const [hasMoreDonations, setHasMoreDonations] = useState(true);
+  const [loadingMoreDonations, setLoadingMoreDonations] = useState(false);
+
+  const { ref: donationLoadMoreRef, inView } = useInView({
+    root: null,
+    threshold: 0.5,
+    rootMargin: '0px',
+    triggerOnce: false,
+    skip: !donationDetailsOpen
+  });
+
+  useEffect(() => {
+    if (donationDetailsOpen && inView && hasMoreDonations && !loadingMoreDonations && selectedCampaignId) {
+      const timer = setTimeout(() => {
+        console.log('Loading more donations...', {
+          inView,
+          hasMoreDonations,
+          loadingMoreDonations,
+          selectedCampaignId,
+          currentPage: donationPage,
+          isDialogOpen: donationDetailsOpen
+        });
+        fetchDonationDetails(selectedCampaignId, true);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [inView, donationDetailsOpen]);
 
   const mintTokens = async (e, amount) => {
     try {
@@ -90,118 +206,124 @@ export default function DonationsManage({ provider, signer }) {
   const [balance, setBalance] = useState('0')
 
   useEffect(() => {
-    
     const init = async () => {
       if (provider && signer) {
-        console.log("Donation Manage中init,进入了provider && signer")
         try {
-          const address = await signer.getAddress()
-          setCurrentAddress(ethers.getAddress(address))
+          const address = await signer.getAddress();
+          setCurrentAddress(ethers.getAddress(address));
           
           const donationsContract = new ethers.Contract(
             contractAddresses.donations,
             DonationsManageContract.abi,
             signer
-          )
+          );
           const token = new ethers.Contract(
             contractAddresses.token,
             Token.abi,
             signer
-          )
+          );
           
-          setContract(donationsContract)
-          setTokenContract(token)
+          setContract(donationsContract);
+          setTokenContract(token);
           
           // Get balance and owner
-          const balance = await token.balanceOf(address)
-          setBalance(ethers.formatUnits(balance, 18))
+          const balance = await token.balanceOf(address);
+          setBalance(ethers.formatUnits(balance, 18));
           
-          await fetchCampaigns(donationsContract)
+          // 只在初始化时获取一次数据
+          if (!contract) {
+            await fetchCampaigns(donationsContract);
+          }
         } catch (error) {
-          console.error('Error initializing contracts:', error)
-          setError('Failed to initialize contracts')
+          console.error('Error initializing contracts:', error);
+          setError('Failed to initialize contracts');
         }
       } else {
-        console.log('No provider or signer')
-        setContract(null)
-        setTokenContract(null)
-        setCampaigns([])
-        setError(null)
+        console.log('No provider or signer');
+        setContract(null);
+        setTokenContract(null);
+        setCampaigns([]);
+        setError(null);
+        setCurrentAddress('');
+        setBalance('0');
       }
-    }
+    };
     
-    init()
-    
-    // Add listener for account changes
-    const handleAccountsChanged = async (accounts) => {
-      if (provider && signer && accounts.length > 0) {
-        try {
-          const newSigner = await provider.getSigner()
-          const address = await newSigner.getAddress()
-          setCurrentAddress(ethers.getAddress(address))
-          
-          const donationsContract = new ethers.Contract(
-            contractAddresses.donations,
-            DonationsManageContract.abi,
-            newSigner
-          )
-          const token = new ethers.Contract(
-            contractAddresses.token,
-            Token.abi,
-            newSigner
-          )
-          setContract(donationsContract)
-          setTokenContract(token)
-          await fetchCampaigns(donationsContract)
-        } catch (error) {
-          console.error('Error handling account change:', error)
-          setError('Failed to handle account change')
-        }
-      } else {
-        console.log('No provider or signer after account change')
-        setContract(null)
-        setTokenContract(null)
-        setCampaigns([])
-        setError(null)
-      }
-    }
-    
-    window.ethereum?.on('accountsChanged', handleAccountsChanged)
-    
-    return () => {
-      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged)
-    }
-  }, [provider, signer])
+    init();
+  }, [provider, signer]);
 
-  const fetchCampaigns = async (contractInstance = contract) => {
+  const fetchCampaigns = async (contractInstance = contract, isLoadMore = false) => {
     try {
-      setLoading(true)
-      const campaignCount = await contractInstance.campaignCount()
-      const count = Number(campaignCount)
-      const campaigns = []
+      if (!isLoadMore) {
+        setLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
+      const requestBody = {
+        page: isLoadMore ? page + 1 : 1,
+        pageSize: pageSize,
+        starter: filterStarter || undefined,
+        status: filterStatus
+      };
       
-      for (let i = 1; i <= count; i++) {
-        const campaign = await contractInstance.getCampaignDetails(i)
-        campaigns.push({
-          id: i, // Store ID as number
-          title: campaign.title,
-          goal: campaign.goal,
-          totalDonated: campaign.totalDonated,
-          startTime: campaign.startTime,
-          endTime: campaign.endTime,
-          status: campaign.status,
-          starter: campaign.starter
-        })
+      console.log('Request body:', requestBody);
+      
+      const response = await fetch('/api/campaign/list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response not ok:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      setCampaigns(campaigns)
-      setError(null)
+      const data = await response.json();
+      console.log('Raw response data:', data);
+      
+      if (data.code === 200) {
+        const mappedCampaigns = data.data.map(campaign => ({
+          id: Number(campaign.CampaignID),
+          title: campaign.Title,
+          goal: campaign.Goal || '0',
+          totalDonated: campaign.TotalDonated || '0',
+          startTime: new Date(campaign.StartTime).getTime() / 1000,
+          endTime: new Date(campaign.EndTime).getTime() / 1000,
+          status: Number(campaign.Status),
+          starter: campaign.Starter,
+          isWithdraw: Boolean(campaign.IsWithdraw)
+        }));
+
+        // 检查是否还有更多数据
+        setHasMore(mappedCampaigns.length === pageSize);
+        
+        if (isLoadMore) {
+          setCampaigns(prev => [...prev, ...mappedCampaigns]);
+          setPage(prev => prev + 1);
+        } else {
+          setCampaigns(mappedCampaigns);
+          setPage(1);
+        }
+      } else {
+        setError(data.msg || 'Failed to fetch campaigns');
+      }
     } catch (err) {
-      setError(err.message)
+      console.error('Fetch error:', err);
+      setError(err.message || 'Failed to fetch campaigns');
     } finally {
-      setLoading(false)
+      if (!isLoadMore) {
+        setLoading(false);
+      } else {
+        setIsLoadingMore(false);
     }
   }
+  };
 
   const formRef = useRef(null)
 
@@ -306,6 +428,9 @@ export default function DonationsManage({ provider, signer }) {
       if (!campaign) {
         throw new Error('Campaign not found')
       }
+      if (!campaign.starter || !currentAddress) {
+        throw new Error('Invalid address')
+      }
       console.log('Attempting to withdraw from campaign:', campaignId, 'Current address:', currentAddress, 'Campaign starter:', campaign.starter);
       
       // Validate campaign starter matches current address
@@ -367,6 +492,94 @@ export default function DonationsManage({ provider, signer }) {
     }
   }
 
+  const fetchDonationDetails = async (campaignId, isLoadMore = false) => {
+    try {
+      if (!isLoadMore) {
+        setLoading(true);
+        setDonationPage(1);
+      } else {
+        setLoadingMoreDonations(true);
+      }
+
+      const requestBody = {
+        page: isLoadMore ? donationPage + 1 : 1,
+        pageSize: 1,
+        campaignId: campaignId
+      };
+      
+      console.log('Fetching donations:', {
+        isLoadMore,
+        currentPage: donationPage,
+        requestBody
+      });
+      
+      const response = await fetch('/api/donation/list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response not ok:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      if (data.code === 200) {
+        const donations = data.data || [];
+        console.log('Received donations:', {
+          count: donations.length,
+          totalCount: data.count,
+          donations
+        });
+        
+        const mappedDonations = donations.map(donation => ({
+          donor: donation.Donor,
+          amount: donation.Amount || '0',
+          isRefund: Boolean(donation.IsRefund),
+          time: donation.CreatedAt
+        }));
+        
+        console.log('Mapped donations:', {
+          count: mappedDonations.length,
+          currentPage: donationPage,
+          mappedDonations
+        });
+        
+        const currentTotal = isLoadMore 
+          ? currentDonationDetails.length + mappedDonations.length 
+          : mappedDonations.length;
+        setHasMoreDonations(currentTotal < data.count);
+        
+        if (isLoadMore) {
+          setCurrentDonationDetails(prev => [...prev, ...mappedDonations]);
+          setDonationPage(prev => prev + 1);
+        } else {
+          setCurrentDonationDetails(mappedDonations);
+        }
+        
+        setSelectedCampaignId(campaignId);
+        setDonationDetailsOpen(true);
+      } else {
+        setError(data.msg || 'Failed to fetch donation details');
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError(err.message || 'Failed to fetch donation details');
+    } finally {
+      if (!isLoadMore) {
+        setLoading(false);
+      } else {
+        setLoadingMoreDonations(false);
+      }
+    }
+  };
 
   const [tabValue, setTabValue] = useState(0)
 
@@ -374,14 +587,60 @@ export default function DonationsManage({ provider, signer }) {
     setTabValue(newValue)
   }
 
-  // Refresh campaigns when tab changes or contract updates
+  // 添加一个单独的 effect 来处理 tabValue 变化
   useEffect(() => {
-    if (contract && tabValue == 2) {
-      fetchCampaigns()
+    if (contract && tabValue === 2) {
+      fetchCampaigns(contract);
     }
-  }, [tabValue, contract])
+  }, [tabValue]);
+
+  const isAddressMatch = (addr1, addr2) => {
+    if (!addr1 || !addr2) return false;
+    try {
+      return ethers.getAddress(addr1) === ethers.getAddress(addr2);
+    } catch (err) {
+      console.error('Error comparing addresses:', err);
+      return false;
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMore) {
+      fetchCampaigns(contract, true);
+    }
+  };
+
+  const handleLoadMoreDonations = () => {
+    if (!loadingMoreDonations && hasMoreDonations && selectedCampaignId) {
+      fetchDonationDetails(selectedCampaignId, true);
+    }
+  };
+
+  // 统一的状态重置函数
+  const resetState = () => {
+    setContract(null);
+    setTokenContract(null);
+    setCampaigns([]);
+    setCurrentAddress('');
+    setBalance('0');
+    setError(null);
+    setPage(1);
+    setHasMore(true);
+    setDonationAmounts({});
+    setDonationDetailsOpen(false);
+    setCurrentDonationDetails([]);
+    setSelectedCampaignId(null);
+    setDonationPage(1);
+    setHasMoreDonations(true);
+  };
 
   return (
+    <ThemeProvider theme={theme}>
+      <Box sx={{ 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+        pt: 3 
+      }}>
       <Container maxWidth="lg" sx={{
         py: 6,
         background: 'linear-gradient(152deg, rgba(17,24,39,0.9) 0%, rgba(31,41,55,0.9) 100%)',
@@ -665,6 +924,46 @@ export default function DonationsManage({ provider, signer }) {
       )}
 
       {tabValue === 2 && (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Filter by Starter"
+                      value={filterStarter}
+                      onChange={(e) => setFilterStarter(e.target.value)}
+                      InputProps={{
+                        startAdornment: <SearchIcon />
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Select
+                      fullWidth
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(Number(e.target.value))}
+                      displayEmpty
+                      startAdornment={<FilterListIcon />}
+                    >
+                      <MenuItem value={-1}>All Status</MenuItem>
+                      <MenuItem value={0}>Pending</MenuItem>
+                      <MenuItem value={1}>Active</MenuItem>
+                      <MenuItem value={2}>Completed</MenuItem>
+                      <MenuItem value={3}>Cancelled</MenuItem>
+                    </Select>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Button 
+                      variant="contained" 
+                      onClick={() => fetchCampaigns()}
+                      startIcon={<SearchIcon />}
+                    >
+                      Search
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
 
       <Grid container spacing={3}>
         {campaigns.map((campaign, index) => (
@@ -698,10 +997,10 @@ export default function DonationsManage({ provider, signer }) {
                   </Typography>
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Goal: {ethers.formatUnits(campaign.goal, 18)} Tokens
+                          Goal: {campaign.goal ? ethers.formatUnits(campaign.goal, 18) : '0'} Tokens
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Raised: {ethers.formatUnits(campaign.totalDonated, 18)} Tokens
+                          Raised: {campaign.totalDonated ? ethers.formatUnits(campaign.totalDonated, 18) : '0'} Tokens
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                   Duration: {formatDuration(campaign.endTime - campaign.startTime)}
@@ -720,8 +1019,17 @@ export default function DonationsManage({ provider, signer }) {
                   />
                 </Box>
                 <Typography variant="body2" color="text.secondary">
-                  Starter: {campaign.starter.slice(0, 6)}...{campaign.starter.slice(-4)}
+                          Starter: {campaign.starter ? 
+                            `${campaign.starter.slice(0, 6)}...${campaign.starter.slice(-4)}` : 
+                            'Unknown'
+                          }
                 </Typography>
+                        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                          <Chip 
+                            label={campaign.isWithdraw ? "Withdrawn" : "Not Withdrawn"}
+                            color={campaign.isWithdraw ? "success" : "warning"}
+                          />
+                        </Box>
               </CardContent>
               <CardActions>
                 <TextField
@@ -772,8 +1080,10 @@ export default function DonationsManage({ provider, signer }) {
                   disabled={
                     loading ||
                     !(Number(donationAmounts[campaign.id]) > 0) ||
-                    Number(campaign.status) !== 1 || // Enable only for active campaigns
-                    ethers.getAddress(campaign.starter) === ethers.getAddress(currentAddress) // Disable for campaign starter
+                            Number(campaign.status) !== 1 ||
+                            !campaign.starter ||
+                            !currentAddress ||
+                            isAddressMatch(campaign.starter, currentAddress)
                   }
                   sx={{
                     '&.Mui-disabled': {
@@ -795,8 +1105,10 @@ export default function DonationsManage({ provider, signer }) {
                       onClick={() => refund(campaign.id)}
                       disabled={
                         loading ||
-                        ethers.getAddress(campaign.starter) === ethers.getAddress(currentAddress) ||
-                        Number(campaign.status) !== 3 || // Only allow refunds for Completed campaigns
+                                !campaign.starter ||
+                                !currentAddress ||
+                                isAddressMatch(campaign.starter, currentAddress) ||
+                                Number(campaign.status) !== 3 ||
                         Number(campaign.totalDonated) === 0
                       }
                     >
@@ -807,11 +1119,13 @@ export default function DonationsManage({ provider, signer }) {
                     <Button
                       variant="outlined"
                       fullWidth
-                      onClick={() => withdraw(index + 1)}
+                              onClick={() => withdraw(campaign.id)}
                       disabled={
                         loading ||
-                        ethers.getAddress(campaign.starter) !== ethers.getAddress(currentAddress) ||
-                        Number(campaign.status) !== 2 || // Only allow withdrawals for completed campaigns
+                                !campaign.starter ||
+                                !currentAddress ||
+                                !isAddressMatch(campaign.starter, currentAddress) ||
+                                Number(campaign.status) !== 2 ||
                         Number(campaign.totalDonated) === 0
                       }
                     >
@@ -825,8 +1139,10 @@ export default function DonationsManage({ provider, signer }) {
                       onClick={() => completeCampaign(campaign.id)}
                       disabled={
                         loading ||
-                        ethers.getAddress(campaign.starter) !== ethers.getAddress(currentAddress) ||
-                        Number(campaign.status) !== 1 // Only allow closing active campaigns
+                                !campaign.starter ||
+                                !currentAddress ||
+                                !isAddressMatch(campaign.starter, currentAddress) ||
+                                Number(campaign.status) !== 1
                       }
                     >
                       {loading ? <CircularProgress size={24} /> : 'Complete'}
@@ -840,8 +1156,10 @@ export default function DonationsManage({ provider, signer }) {
                       onClick={() => cancelCampaign(campaign.id)}
                       disabled={
                         loading ||
-                        ethers.getAddress(campaign.starter) !== ethers.getAddress(currentAddress) ||
-                        Number(campaign.status) === 2 || Number(campaign.status) === 3 //Completed or Cancelled can not Cancel again
+                                !campaign.starter ||
+                                !currentAddress ||
+                                !isAddressMatch(campaign.starter, currentAddress) ||
+                                Number(campaign.status) === 2 || Number(campaign.status) === 3
                       }
                     >
                       {loading ? <CircularProgress size={24} /> : 'Cancel'}
@@ -849,10 +1167,244 @@ export default function DonationsManage({ provider, signer }) {
                   </Grid>
                 </Grid>
               </CardActions>
+                      <CardActions>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={() => fetchDonationDetails(campaign.id)}
+                        >
+                          View Donations
+                        </Button>
+                      </CardActions>
             </Card>
           </Grid>
         ))}
       </Grid>
+
+              {/* 添加加载更多按钮 */}
+              {hasMore && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleLoadMore}
+                    disabled={isLoadingMore}
+                    sx={{
+                      minWidth: 200,
+                      py: 1,
+                      background: 'rgba(31,41,55,0.6)',
+                      borderColor: 'rgba(99,102,241,0.3)',
+                      '&:hover': {
+                        borderColor: '#6366F1',
+                        background: 'rgba(31,41,55,0.8)',
+                      }
+                    }}
+                  >
+                    {isLoadingMore ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      'Load More Campaigns'
+                    )}
+                  </Button>
+                </Box>
+              )}
+
+              {/* 捐款详情对话框 */}
+              <Dialog 
+                open={donationDetailsOpen} 
+                onClose={() => {
+                  setDonationDetailsOpen(false);
+                  setTimeout(() => {
+                    setCurrentDonationDetails([]);
+                    setDonationPage(1);
+                    setHasMoreDonations(true);
+                    setSelectedCampaignId(null);
+                  }, 300);
+                }}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                  sx: {
+                    background: 'rgba(30, 41, 59, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(99, 102, 241, 0.1)',
+                    borderRadius: '16px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                    color: '#f8fafc'
+                  }
+                }}
+              >
+                <DialogTitle sx={{
+                  borderBottom: '1px solid rgba(99, 102, 241, 0.1)',
+                  background: 'linear-gradient(90deg, rgba(31,41,55,0.95) 0%, rgba(17,24,39,0.95) 100%)',
+                  color: '#f8fafc',
+                  fontSize: '1.25rem',
+                  fontWeight: 600
+                }}>
+                  Donation Details for Campaign #{selectedCampaignId}
+                </DialogTitle>
+                <DialogContent sx={{ p: 0 }}>
+                  <Box sx={{ height: '60vh' }}>
+                    <TableContainer 
+                      sx={{ 
+                        height: '100%',
+                        overflow: 'auto',
+                        '&::-webkit-scrollbar': {
+                          width: '8px'
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          background: 'rgba(31,41,55,0.3)'
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          background: 'rgba(99,102,241,0.3)',
+                          borderRadius: '4px',
+                          '&:hover': {
+                            background: 'rgba(99,102,241,0.5)'
+                          }
+                        }
+                      }}
+                    >
+                      <Table stickyHeader>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell sx={{ 
+                              background: 'rgba(31,41,55,0.95)',
+                              color: '#94a3b8',
+                              fontWeight: 600,
+                              borderBottom: '1px solid rgba(99,102,241,0.1)'
+                            }}>Donor</TableCell>
+                            <TableCell align="right" sx={{ 
+                              background: 'rgba(31,41,55,0.95)',
+                              color: '#94a3b8',
+                              fontWeight: 600,
+                              borderBottom: '1px solid rgba(99,102,241,0.1)'
+                            }}>Amount</TableCell>
+                            <TableCell align="center" sx={{ 
+                              background: 'rgba(31,41,55,0.95)',
+                              color: '#94a3b8',
+                              fontWeight: 600,
+                              borderBottom: '1px solid rgba(99,102,241,0.1)'
+                            }}>Status</TableCell>
+                            <TableCell align="center" sx={{ 
+                              background: 'rgba(31,41,55,0.95)',
+                              color: '#94a3b8',
+                              fontWeight: 600,
+                              borderBottom: '1px solid rgba(99,102,241,0.1)'
+                            }}>Time</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {currentDonationDetails.map((donation, index) => (
+                            <TableRow 
+                              key={index}
+                              sx={{
+                                background: 'transparent',
+                                '&:hover': {
+                                  background: 'rgba(99,102,241,0.1)'
+                                },
+                                transition: 'background-color 0.2s ease'
+                              }}
+                            >
+                              <TableCell sx={{ 
+                                color: '#f8fafc',
+                                borderBottom: '1px solid rgba(99,102,241,0.1)'
+                              }}>
+                                {`${donation.donor.slice(0, 6)}...${donation.donor.slice(-4)}`}
+                              </TableCell>
+                              <TableCell align="right" sx={{ 
+                                color: '#f8fafc',
+                                borderBottom: '1px solid rgba(99,102,241,0.1)'
+                              }}>
+                                {donation.amount ? ethers.formatUnits(donation.amount, 18) : '0'} Tokens
+                              </TableCell>
+                              <TableCell align="center" sx={{ 
+                                borderBottom: '1px solid rgba(99,102,241,0.1)'
+                              }}>
+                                <Chip 
+                                  label={donation.isRefund ? "Refunded" : "Not Refunded"}
+                                  sx={{
+                                    backgroundColor: donation.isRefund 
+                                      ? 'rgba(52,211,153,0.2)' 
+                                      : 'rgba(251,191,36,0.2)',
+                                    color: donation.isRefund 
+                                      ? '#34D399' 
+                                      : '#FBB224',
+                                    borderRadius: '8px',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem'
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell align="center" sx={{ 
+                                color: '#f8fafc',
+                                borderBottom: '1px solid rgba(99,102,241,0.1)'
+                              }}>
+                                {new Date(donation.time).toLocaleString()}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      {hasMoreDonations && (
+                        <Box 
+                          ref={donationLoadMoreRef}
+                          sx={{ 
+                            py: 2,
+                            textAlign: 'center',
+                            background: 'transparent'
+                          }}
+                        >
+                          {loadingMoreDonations ? (
+                            <CircularProgress 
+                              size={24} 
+                              sx={{ color: 'rgba(99,102,241,0.8)' }} 
+                            />
+                          ) : (
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                color: '#94a3b8',
+                                fontSize: '0.875rem'
+                              }}
+                            >
+                              Scroll to load more
+                            </Typography>
+                          )}
+                        </Box>
+                      )}
+                    </TableContainer>
+                  </Box>
+                </DialogContent>
+                <DialogActions sx={{
+                  borderTop: '1px solid rgba(99,102,241,0.1)',
+                  background: 'linear-gradient(90deg, rgba(31,41,55,0.95) 0%, rgba(17,24,39,0.95) 100%)',
+                  px: 3,
+                  py: 2
+                }}>
+                  <Button 
+                    onClick={() => {
+                      setDonationDetailsOpen(false);
+                      setTimeout(() => {
+                        setCurrentDonationDetails([]);
+                        setDonationPage(1);
+                        setHasMoreDonations(true);
+                        setSelectedCampaignId(null);
+                      }, 300);
+                    }}
+                    sx={{
+                      background: 'rgba(99,102,241,0.1)',
+                      color: '#f8fafc',
+                      borderRadius: '8px',
+                      px: 3,
+                      '&:hover': {
+                        background: 'rgba(99,102,241,0.2)'
+                      }
+                    }}
+                  >
+                    Close
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
       )}
       {/* Transaction Dialog */}
       <Dialog open={txDialogOpen} onClose={() => setTxDialogOpen(false)}>
@@ -872,5 +1424,7 @@ export default function DonationsManage({ provider, signer }) {
         </DialogActions>
       </Dialog>
     </Container>
+      </Box>
+    </ThemeProvider>
   )
 }

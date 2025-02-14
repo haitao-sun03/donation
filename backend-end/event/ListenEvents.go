@@ -78,12 +78,12 @@ type EventHandler interface {
 
 // 事件类型枚举
 const (
-	DonateEvent           = "Donate"
-	StartCampaignEvent    = "StartCampaign"
-	CancelCampaignEvent   = "CancelCampaign"
-	CompleteCampaignEvent = "CompleteCampaign"
-	WithdrawEvent         = "Withdraw"
-	RefundEvent           = "Refund"
+	DonateEvent            = "Donate"
+	StartCampaignEvent     = "StartCampaign"
+	CancelledCampaignEvent = "CancellCampaign"
+	CompletedCampaignEvent = "CompletedCampaign"
+	WithdrawEvent          = "Withdraw"
+	RefundEvent            = "Refund"
 )
 
 // 事件处理器注册表
@@ -192,12 +192,12 @@ func parseDonateEvent(vLog types.Log) (*DonationRecord, error) {
 	// 解包日志数据
 	var event struct {
 		CampaignId *big.Int
-		Donor      common.Address
+		Donater    common.Address
 		Amount     *big.Int
 	}
 
-	if err := contractAbi.UnpackIntoInterface(&event, "Donate", vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack StartCampaign event: %v", err)
+	if err := contractAbi.UnpackIntoInterface(&event, DonateEvent, vLog.Data); err != nil {
+		return nil, fmt.Errorf("failed to unpack Donate event: %v", err)
 	}
 
 	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
@@ -210,9 +210,14 @@ func parseDonateEvent(vLog types.Log) (*DonationRecord, error) {
 
 	return &DonationRecord{
 		CampaignID: campaignId,
-		Donor:      event.Donor,
+		Donor:      event.Donater,
 		Amount:     event.Amount,
 		BlockTime:  header.Time,
+		BaseEvent: BaseEvent{
+			EventType: DonateEvent,
+			BlockTime: header.Time,
+			TxHash:    vLog.TxHash,
+		},
 	}, nil
 }
 
@@ -222,11 +227,12 @@ func parseRefundEvent(vLog types.Log) (*RefundRecord, error) {
 
 	// 解包日志数据
 	var event struct {
-		Refunder common.Address
-		Time     *big.Int
+		Refunder     common.Address
+		Time         *big.Int
+		RefundAmount *big.Int
 	}
 
-	if err := contractAbi.UnpackIntoInterface(&event, "Refund", vLog.Data); err != nil {
+	if err := contractAbi.UnpackIntoInterface(&event, RefundEvent, vLog.Data); err != nil {
 		return nil, fmt.Errorf("failed to unpack Refund event: %v", err)
 	}
 
@@ -369,7 +375,7 @@ func parseStartCampaignEvent(vLog types.Log) (*StartCampaignRecord, error) {
 		Status    uint8
 	}
 
-	if err := contractAbi.UnpackIntoInterface(&event, "StartCampaign", vLog.Data); err != nil {
+	if err := contractAbi.UnpackIntoInterface(&event, StartCampaignEvent, vLog.Data); err != nil {
 		return nil, fmt.Errorf("failed to unpack StartCampaign event: %v", err)
 	}
 
@@ -441,7 +447,7 @@ func parseCancelCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
 		Time   *big.Int
 	}
 
-	if err := contractAbi.UnpackIntoInterface(&event, "CancellCampaign", vLog.Data); err != nil {
+	if err := contractAbi.UnpackIntoInterface(&event, CancelledCampaignEvent, vLog.Data); err != nil {
 		return nil, fmt.Errorf("failed to unpack CancellCampaign event: %v", err)
 	}
 
@@ -458,7 +464,7 @@ func parseCancelCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
 		Timestamp:  event.Time,
 		Status:     model.CampaignStatusCancelled,
 		BaseEvent: BaseEvent{
-			EventType: CancelCampaignEvent,
+			EventType: CancelledCampaignEvent,
 			BlockTime: header.Time,
 			TxHash:    vLog.TxHash,
 		},
@@ -474,8 +480,8 @@ func parseCompleteCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
 		Time   *big.Int
 	}
 
-	if err := contractAbi.UnpackIntoInterface(&event, "CompleteCampaign", vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack CompleteCampaign event: %v", err)
+	if err := contractAbi.UnpackIntoInterface(&event, CompletedCampaignEvent, vLog.Data); err != nil {
+		return nil, fmt.Errorf("failed to unpack CompletedCampaign event: %v", err)
 	}
 
 	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
@@ -491,7 +497,7 @@ func parseCompleteCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
 		Timestamp:  event.Time,
 		Status:     model.CampaignStatusCompleted,
 		BaseEvent: BaseEvent{
-			EventType: CompleteCampaignEvent,
+			EventType: CompletedCampaignEvent,
 			BlockTime: header.Time,
 			TxHash:    vLog.TxHash,
 		},
@@ -502,12 +508,13 @@ func parseWithdrawEvent(vLog types.Log) (*CampaignIsWithdrawRecord, error) {
 	contractAbi := getContractABI()
 
 	var event struct {
-		Id         *big.Int
-		Withdrawer common.Address
-		Time       *big.Int
+		Id             *big.Int
+		Withdrawer     common.Address
+		Time           *big.Int
+		WithdrawAmount *big.Int
 	}
 
-	if err := contractAbi.UnpackIntoInterface(&event, "Withdraw", vLog.Data); err != nil {
+	if err := contractAbi.UnpackIntoInterface(&event, WithdrawEvent, vLog.Data); err != nil {
 		return nil, fmt.Errorf("failed to unpack Withdraw event: %v", err)
 	}
 

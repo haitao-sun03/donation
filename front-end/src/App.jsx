@@ -45,65 +45,88 @@ function App() {
     }
   }
 
-  // Initialize provider and setup event listeners
-  useEffect(() => {
-    let accountsChangedHandler
-    let chainChangedHandler
+  // 修改 handleAccountsChanged 函数
+  const handleAccountsChanged = async (accounts) => {
+    try {
+      if (accounts.length > 0) {
+        // 等待 provider 准备就绪
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // 只有当账户真的改变时才更新状态
+        const web3Provider = new ethers.BrowserProvider(window.ethereum);
+        const newSigner = await web3Provider.getSigner();
+        const address = await newSigner.getAddress();
+        
+        // 检查账户是否真的改变了
+        if (address !== account) {
+          setAccount(address);
+          setProvider(web3Provider);
+          setSigner(newSigner);
+          setConnected(true);
+        }
+      } else {
+        // 断开连接时清除状态
+        setAccount(null);
+        setProvider(null);
+        setSigner(null);
+        setConnected(false);
+      }
+    } catch (error) {
+      console.error('Error handling account change:', error);
+      // 出错时也清除状态
+      setAccount(null);
+      setProvider(null);
+      setSigner(null);
+      setConnected(false);
+    }
+  };
 
+  // 修改 init 函数
+  useEffect(() => {
     const init = async () => {
       if (window.ethereum) {
         try {
-          const provider = new ethers.BrowserProvider(window.ethereum)
-          setProvider(provider)
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const accounts = await provider.listAccounts();
           
-          const accounts = await provider.listAccounts()
           if (accounts.length > 0) {
-            setAccount(accounts[0].address)
-            setSigner(await provider.getSigner())
-            setConnected(true)
+            const signer = await provider.getSigner();
+            const address = await signer.getAddress();
+            
+            // 只在初始化时设置一次
+            setAccount(address);
+            setProvider(provider);
+            setSigner(signer);
+            setConnected(true);
           }
         } catch (error) {
-          console.error('Error initializing wallet:', error)
+          console.error('Error initializing wallet:', error);
         } finally {
-          setIsLoading(false)
+          setIsLoading(false);
         }
 
-        // Add event listeners
-        accountsChangedHandler = async (accounts) => {
-          if (accounts.length > 0) {
-            setAccount(accounts[0])
-            setSigner(await provider.getSigner())
-            setConnected(true)
-          } else {
-            setAccount(null)
-            setSigner(null)
-            setConnected(false)
-          }
-        }
-
-        chainChangedHandler = () => {
-          window.location.reload()
-        }
-
-        window.ethereum.on('accountsChanged', accountsChangedHandler)
-        window.ethereum.on('chainChanged', chainChangedHandler)
+        // 添加事件监听器
+        window.ethereum.on('accountsChanged', handleAccountsChanged);
+        window.ethereum.on('chainChanged', () => {
+          window.location.reload();
+        });
+      } else {
+        setIsLoading(false);
       }
-    }
+    };
     
-    init()
+    init();
 
-    // Cleanup event listeners
+    // 清理事件监听器
     return () => {
       if (window.ethereum) {
-        if (accountsChangedHandler) {
-          window.ethereum.removeListener('accountsChanged', accountsChangedHandler)
-        }
-        if (chainChangedHandler) {
-          window.ethereum.removeListener('chainChanged', chainChangedHandler)
-        }
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', () => {
+          window.location.reload();
+        });
       }
-    }
-  }, [])
+    };
+  }, []); // 保持空依赖数组
 
   if (isLoading) {
     return (
