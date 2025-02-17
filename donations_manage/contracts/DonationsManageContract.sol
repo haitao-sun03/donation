@@ -187,10 +187,6 @@ contract DonationsManageContract is AutomationCompatibleInterface {
         bool success = token.transferFrom(msg.sender, address(this), _amount);
         require(success,"donate transfer fail");
 
-        // if donate value reach 20% of the goal,give donater a nft
-        if (_amount * 5 > campaign.goal) {
-            nft.safeMint(msg.sender);
-        }
         emit Donate(_campaignId, msg.sender, _amount);
     }
 

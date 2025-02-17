@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -27,5 +28,7 @@ func main() {
 		}
 	})
 	r := routers.Router()
+	fmt.Println("===", config.Config.Geth.Nft.PrivateKey)
+	fmt.Println("===", config.Config.Geth.Nft.ChainID)
 	r.Run(":9999")
 }

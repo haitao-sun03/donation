@@ -1,0 +1,16 @@
+{
+  "name": "Silver Coin",
+  "description": "This NFT is awarded to individuals who have made a small but meaningful contribution to our fundraising campaign. Thank you for supporting our cause!",
+  "image": "ipfs://QmXVSbA75WevB2EDFDjs69m79UfpC5RLCSoA2yRtxx59Qr",
+  "attributes": [
+    {
+      "trait_type": "Donation Level",
+      "value": "Silver"
+    },
+    {
+      "trait_type": "Contribution",
+      "value": "Large"
+    }
+  ],
+  "external_url": "https://github.com/haitao-sun03/donation"
+}

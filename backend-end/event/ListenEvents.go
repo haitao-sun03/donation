@@ -10,12 +10,14 @@ import (
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/haitao-sun03/go/config"
 	"github.com/haitao-sun03/go/model"
+	"github.com/haitao-sun03/go/utils"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -262,7 +264,7 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 
 	// 开启事务（确保原子性）
 	return db.Transaction(func(tx *gorm.DB) error {
-		// 更新活动总捐赠额（只需要一次）
+		// 1 更新活动总捐赠额
 		var campaign model.CampaignModel
 		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 			Where("campaign_id = ?", donationRecord.CampaignID.String()).
@@ -284,7 +286,7 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 			return err
 		}
 
-		// 处理捐赠记录
+		// 2 处理捐赠记录
 		var existing model.DonationModel
 
 		// 查询现有记录（带行锁）
@@ -296,7 +298,7 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 		// db.Transaction回调方法中需要返回error，若为nil，则提交事务，否则rollback
 		switch {
 		case err == gorm.ErrRecordNotFound:
-			// 创建新记录
+			// 该用户第一次捐赠，创建新的捐赠记录
 			return tx.Create(&model.DonationModel{
 				CampaignID: donationRecord.CampaignID.String(),
 				Donor:      donationRecord.Donor.Hex(),
@@ -308,7 +310,6 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 			return err
 
 		default:
-			// 金额累加（大数运算）
 			oldAmount, _ := new(big.Int).SetString(existing.Amount, 10)
 			newAmount := new(big.Int).Add(oldAmount, donationRecord.Amount)
 
@@ -555,16 +556,80 @@ func updateCampaignStatus(record *CampaignStatusRecord) error {
 		// err包括记录没有查找到的情况
 		case err != nil:
 			return err
-
 		default:
-
 			// 更新记录
-			return tx.Model(&existing).
+			if err = tx.Model(&existing).
 				Updates(map[string]interface{}{
 					"status": record.Status,
-				}).Error
+				}).Error; err != nil {
+				return err
+			}
 		}
+		// 如果活动状态为已完成，则检查是否需要铸造NFT
+		if record.Status == model.CampaignStatusCompleted {
+			err = checkMintNFTOfTheCampaign(tx, record, existing)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	})
+}
+
+func checkMintNFTOfTheCampaign(tx *gorm.DB, record *CampaignStatusRecord, campaign model.CampaignModel) error {
+	// 查询该活动的所有donations
+	var donations []model.DonationModel
+	if err := tx.Where("campaign_id = ?", record.CampaignID.String()).Find(&donations).Error; err != nil {
+		return err
+	}
+
+	for _, donation := range donations {
+		donationAmount, _ := new(big.Int).SetString(donation.Amount, 10)
+		campaignGoal, _ := new(big.Int).SetString(campaign.Goal, 10)
+		ratio := new(big.Float).Quo(new(big.Float).SetInt(donationAmount), new(big.Float).SetInt(campaignGoal))
+		percentage := new(big.Float).Mul(ratio, big.NewFloat(100))
+
+		thresholds := []struct {
+			percent int
+			level   string
+		}{
+			{100, model.Diamond},
+			{50, model.Gold},
+			{20, model.Silver},
+		}
+		for _, threshold := range thresholds {
+			if percentage.Cmp(big.NewFloat(float64(threshold.percent))) >= 0 {
+				// 达到或超过阈值，铸造NFT
+				log.Infof("Minting NFT for %s at %d,donor :%s", threshold.level, threshold.percent, donation.Donor)
+
+				auth, err := utils.GetTransactOpts(2000000)
+				if err != nil {
+					log.WithError(err).Error("Failed to get transact opts")
+					return err
+				}
+				tran, err := config.NFTContract.SafeMint(auth, common.HexToAddress(donation.Donor), threshold.level)
+				if err != nil {
+					log.WithError(err).Error("Failed to mint NFT")
+					return err
+				}
+				if _, err = bind.WaitMined(context.Background(), config.GethClient, tran); err != nil {
+					log.WithError(err).Error("Failed to wait for NFT minting transaction to be mined")
+					return err
+				}
+
+				// 更新表
+				err = tx.Model(&donation).
+					Updates(map[string]interface{}{
+						"mint_level": threshold.level,
+					}).Error
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+	}
+	return nil
 }
 
 func updateCampaignWithdraw(record *CampaignIsWithdrawRecord) error {

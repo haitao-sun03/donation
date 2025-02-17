@@ -411,7 +411,13 @@ export default function DonationsManage({ provider, signer }) {
       setTxDialogOpen(true)
       await tx.wait()
       setTxStatus('Transaction finished')
-      await fetchCampaigns()
+      
+      // 重新加载数据
+      await Promise.all([
+        fetchCampaigns(), // 刷新活动列表
+        fetchDonationDetails(campaignId) // 刷新捐赠详情
+      ])
+      
       setError(null)
     } catch (err) {
       setError(err.message)
@@ -543,7 +549,8 @@ export default function DonationsManage({ provider, signer }) {
           donor: donation.Donor,
           amount: donation.Amount || '0',
           isRefund: Boolean(donation.IsRefund),
-          time: donation.CreatedAt
+          time: donation.CreatedAt,
+          mintLevel: donation.MintLevel
         }));
         
         console.log('Mapped donations:', {
@@ -1102,24 +1109,7 @@ export default function DonationsManage({ provider, signer }) {
                     <Button
                       variant="outlined"
                       fullWidth
-                      onClick={() => refund(campaign.id)}
-                      disabled={
-                        loading ||
-                                !campaign.starter ||
-                                !currentAddress ||
-                                isAddressMatch(campaign.starter, currentAddress) ||
-                                Number(campaign.status) !== 3 ||
-                        Number(campaign.totalDonated) === 0
-                      }
-                    >
-                      {loading ? <CircularProgress size={24} /> : 'Refund'}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                              onClick={() => withdraw(campaign.id)}
+                      onClick={() => withdraw(campaign.id)}
                       disabled={
                         loading ||
                                 !campaign.starter ||
@@ -1290,6 +1280,18 @@ export default function DonationsManage({ provider, signer }) {
                               fontWeight: 600,
                               borderBottom: '1px solid rgba(99,102,241,0.1)'
                             }}>Time</TableCell>
+                            <TableCell align="center" sx={{ 
+                              background: 'rgba(31,41,55,0.95)',
+                              color: '#94a3b8',
+                              fontWeight: 600,
+                              borderBottom: '1px solid rgba(99,102,241,0.1)'
+                            }}>Refund</TableCell>
+                            <TableCell align="center" sx={{ 
+                              background: 'rgba(31,41,55,0.95)',
+                              color: '#94a3b8',
+                              fontWeight: 600,
+                              borderBottom: '1px solid rgba(99,102,241,0.1)'
+                            }}>NFT Level</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -1339,6 +1341,51 @@ export default function DonationsManage({ provider, signer }) {
                                 borderBottom: '1px solid rgba(99,102,241,0.1)'
                               }}>
                                 {new Date(donation.time).toLocaleString()}
+                              </TableCell>
+                              <TableCell align="center" sx={{ 
+                                borderBottom: '1px solid rgba(99,102,241,0.1)'
+                              }}>
+                                <Button
+                                  variant="contained"
+                                  color="secondary"
+                                  size="small"
+                                  onClick={() => refund(selectedCampaignId)}
+                                  disabled={
+                                    loading || 
+                                    donation.isRefund ||
+                                    !campaigns.find(c => c.id === selectedCampaignId)?.status ||
+                                    campaigns.find(c => c.id === selectedCampaignId)?.status !== 3 ||
+                                    !currentAddress ||
+                                    !donation.donor ||
+                                    !isAddressMatch(donation.donor, currentAddress)
+                                  }
+                                  sx={{
+                                    minWidth: '80px',
+                                    fontSize: '0.75rem',
+                                    py: 0.5
+                                  }}
+                                >
+                                  {loading ? <CircularProgress size={20} /> : 'Refund'}
+                                </Button>
+                              </TableCell>
+                              <TableCell align="center" sx={{ 
+                                color: '#f8fafc',
+                                borderBottom: '1px solid rgba(99,102,241,0.1)'
+                              }}>
+                                <Chip 
+                                  label={donation.mintLevel || "Not Minted"}
+                                  sx={{
+                                    backgroundColor: donation.mintLevel 
+                                      ? 'rgba(52,211,153,0.2)' 
+                                      : 'rgba(156,163,175,0.2)',
+                                    color: donation.mintLevel 
+                                      ? '#34D399' 
+                                      : '#9CA3AF',
+                                    borderRadius: '8px',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem'
+                                  }}
+                                />
                               </TableCell>
                             </TableRow>
                           ))}

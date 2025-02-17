@@ -1,0 +1,16 @@
+{
+  "name": "Diamond Coin",
+  "description": "This NFT is awarded to individuals who have made a small but meaningful contribution to our fundraising campaign. Thank you for supporting our cause!",
+  "image": "ipfs://QmWMosSMZZbNoTFZFrxTL24PDDUY13ggug74EmaD6C7YRo",
+  "attributes": [
+    {
+      "trait_type": "Donation Level",
+      "value": "diamond"
+    },
+    {
+      "trait_type": "Contribution",
+      "value": "Small"
+    }
+  ],
+  "external_url": "https://github.com/haitao-sun03/donation"
+}

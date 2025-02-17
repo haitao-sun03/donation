@@ -11,18 +11,20 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable {
     uint256 private _nextTokenId;
 
-    string constant META_DATA = "ipfs://QmQURtLLQPMnqXQe5DDxTdJNhoHrzb9HGP1PLL7cDCqZPt";
+    mapping(string=>string) public levelToMetaDataURI;
 
     constructor(string memory tokenName,string memory tokenSymol)
         ERC721(tokenName, tokenSymol)
         Ownable(msg.sender) {
-
+            levelToMetaDataURI["Diamond"] = "ipfs://QmeTL7fuLwLHpGL63mj1pajswuxguRCQwQ8cBVaaKHBtSW";
+            levelToMetaDataURI["Gold"] = "ipfs://QmPKUYWW4wHvfJfmWywHLf5wMkicLD6kV3Q9qN5MA7Evgh";
+            levelToMetaDataURI["Silver"] = "ipfs://QmcocY2idHJKAtGQUuZBdnRuDZe7DJjTrngbx31KYR3WmW";
         }
 
-    function safeMint(address to) public {
+    function safeMint(address to,string memory level) public {
         uint256 tokenId = _nextTokenId++;
         _safeMint(to, tokenId);
-        _setTokenURI(tokenId, META_DATA);
+        _setTokenURI(tokenId,  levelToMetaDataURI[level]);
     }
 
     // The following functions are overrides required by Solidity.

@@ -47,16 +47,27 @@ type RedisConfig struct {
 }
 
 type GethConfig struct {
-	WsAddress          string
-	Address            string
-	KeystorePath       string
-	DonationContract   DonationContractConfig
-	nftContractAddress string
+	WsAddress        string
+	Address          string
+	KeystorePath     string
+	DonationContract DonationContractConfig
+	NftContract      NftContractConfig
+	Nft              NFTConfig
 }
 
 type DonationContractConfig struct {
 	Address string
 	AbiPath string
+}
+
+type NftContractConfig struct {
+	Address string
+	AbiPath string
+}
+
+type NFTConfig struct {
+	PrivateKey string
+	ChainID    int64
 }
 
 var Config Configs
@@ -205,6 +216,7 @@ func InitGeth() {
 
 var (
 	DonationManageContract *abi.DonationManage
+	NFTContract            *abi.Nft
 	err                    error
 )
 
@@ -212,6 +224,12 @@ func InitContract() {
 	DonationManageContract, err = abi.NewDonationManage(common.HexToAddress(Config.Geth.DonationContract.Address), GethClient)
 	if err != nil {
 		log.Fatalln("NewDonationManage error")
+		return
+	}
+
+	NFTContract, err = abi.NewNft(common.HexToAddress(Config.Geth.NftContract.Address), GethClient)
+	if err != nil {
+		log.Fatalln("NewNft error")
 		return
 	}
 

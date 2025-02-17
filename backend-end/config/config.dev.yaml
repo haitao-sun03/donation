@@ -52,5 +52,10 @@ geth:
   donationContract:
     address: "0xA03384C52E88b60cecc00EEF44f827caECe072b5"
     abiPath: "abi/donation.abi"
-  nftContractAddress: "xxx"
+  nftContract:
+    address: "0x812f60E4e7822A2439504f5806410244136BFbd2"
+    abiPath: "abi/nft.abi"
+  nft:
+    private_key: "4d793e28b59cae1f0680ebeda1fc70f8019dbd19041c725c02be75f6261962d9"  # NFT合约部署者私钥
+    chain_id: 11155111                    # 链ID(如Goerli=5)
 

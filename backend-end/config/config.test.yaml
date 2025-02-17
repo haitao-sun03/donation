@@ -50,7 +50,12 @@ geth:
   address: "https://eth-sepolia.g.alchemy.com/v2/_6dn2JqC0JV9irSos3S9FnkpUafPw6cX"
   keystorePath: "/geth/dev/keystore"
   donationContract:
-    address: "0x4c142a072B494a47A4bfe8e1e49427c36c643F34"
+    address: "0xDF832146EF0988567B1eCA64B78fCdDC90EF27F1"
     abiPath: "abi/donation.abi"
-  nftContractAddress: "xxx"
+  nftContract:
+    address: "0x812f60E4e7822A2439504f5806410244136BFbd2"
+    abiPath: "abi/nft.abi"
+  nft:
+    privateKey: "4d793e28b59cae1f0680ebeda1fc70f8019dbd19041c725c02be75f6261962d9"
+    chainId: 11155111
 
