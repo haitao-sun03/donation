@@ -130,7 +130,7 @@ export default function DonationsManage({ provider, signer }) {
   const [txStatus, setTxStatus] = useState("");
   const [txHash, setTxHash] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(3);
   const [filterStarter, setFilterStarter] = useState("");
   const [filterStatus, setFilterStatus] = useState(-1);
   const [donationDetailsOpen, setDonationDetailsOpen] = useState(false);
@@ -270,13 +270,14 @@ export default function DonationsManage({ provider, signer }) {
   }, [provider, signer]);
 
   const fetchCampaigns = async (
-    contractInstance = contract,
     isLoadMore = false
   ) => {
     try {
+      console.log("isLoadMore", isLoadMore);
+
       if (!isLoadMore) {
         setLoading(true);
-        setCampaigns([]);
+        // setCampaigns([]);
       } else {
         setIsLoadingMore(true);
       }
@@ -318,7 +319,7 @@ export default function DonationsManage({ provider, signer }) {
           endTime: new Date(campaign.EndTime).getTime() / 1000,
           status: Number(campaign.Status),
           starter: campaign.Starter,
-          isWithdraw: Boolean(campaign.IsWithdraw),
+          isWithdraw: Number(campaign.IsWithdraw),
           nature: Number(campaign.Nature),
           beneficiary: Number(campaign.Beneficiary),
           purpose: campaign.Purpose,
@@ -640,7 +641,6 @@ export default function DonationsManage({ provider, signer }) {
   // 添加一个单独的 effect 来处理 tabValue 变化
   useEffect(() => {
     console.log("tabValue", tabValue);
-    console.log("tokenContract", tokenContract);
     if (tokenContract && tabValue === 0) {
       const getTokenInfo = async () => {
         // Get balance and owner
@@ -654,7 +654,12 @@ export default function DonationsManage({ provider, signer }) {
     }
 
     if (contract && tabValue === 2) {
-      fetchCampaigns(contract);
+      const getTokenInfo = async () => {
+        setPage(1); // 重置页面
+        setPageSize(3); // 确保 pageSize 被重置
+        await fetchCampaigns();
+      };
+      getTokenInfo();
     }
   }, [tabValue]);
 
@@ -670,7 +675,7 @@ export default function DonationsManage({ provider, signer }) {
 
   const handleLoadMore = () => {
     if (!isLoadingMore && hasMore) {
-      fetchCampaigns(contract, true);
+      fetchCampaigns(true);
     }
   };
 
@@ -1049,13 +1054,18 @@ export default function DonationsManage({ provider, signer }) {
                           <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
                             <Chip
                               label={
-                                campaign.isWithdraw
-                                  ? "Withdrawn"
-                                  : "Not Withdrawn"
+                                campaign.isWithdraw === 1
+                                  ? "Withdraw"
+                                  : "Not Withdraw"
                               }
-                              color={
-                                campaign.isWithdraw ? "success" : "warning"
-                              }
+                              sx={{
+                                backgroundColor: [
+                                  "primary.main",
+                                  "secondary.main",
+                                ][campaign.isWithdraw],
+                                color: "white",
+                                fontWeight: 600,
+                              }}
                             />
                           </Box>
                         </CardContent>
@@ -1147,6 +1157,7 @@ export default function DonationsManage({ provider, signer }) {
                                     currentAddress
                                   ) ||
                                   Number(campaign.status) !== 2 ||
+                                  Number(campaign.isWithdraw) !== 0 ||
                                   Number(campaign.totalDonated) === 0
                                 }
                               >
@@ -1312,6 +1323,7 @@ export default function DonationsManage({ provider, signer }) {
                           <TableHead>
                             <TableRow>
                               <TableCell
+
                                 sx={{
                                   background: "rgba(31,41,55,0.95)",
                                   color: "#94a3b8",
@@ -1323,7 +1335,7 @@ export default function DonationsManage({ provider, signer }) {
                                 Donor
                               </TableCell>
                               <TableCell
-                                align="right"
+                                align="center"
                                 sx={{
                                   background: "rgba(31,41,55,0.95)",
                                   color: "#94a3b8",
@@ -1409,7 +1421,7 @@ export default function DonationsManage({ provider, signer }) {
                                   )}...${donation.donor.slice(-4)}`}
                                 </TableCell>
                                 <TableCell
-                                  align="right"
+                                  align="center"
                                   sx={{
                                     color: "#f8fafc",
                                     borderBottom:
@@ -1418,8 +1430,8 @@ export default function DonationsManage({ provider, signer }) {
                                 >
                                   {donation.amount
                                     ? ethers.formatUnits(donation.amount, 18)
-                                    : "0"}{" "}
-                                  Tokens
+                                    : 0}
+                                  
                                 </TableCell>
                                 <TableCell
                                   align="center"

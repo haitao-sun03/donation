@@ -34,7 +34,7 @@ const NftDisplay = ({ currentAddress }) => {
             setNfts([]);
           } else if (Array.isArray(data.data)) {
             setNfts(data.data);
-            fetchNftMetadata(data.data);
+            await fetchNftMetadata(data.data);
           } else {
             setError('Invalid data format');
           }
@@ -113,7 +113,7 @@ const NftDisplay = ({ currentAddress }) => {
                         />
                       </Box>
                     )}
-                     <Typography variant="body2" sx={{ color: '#f8fafc', mb: 1 }}>from campaign: {n.CampaignId}</Typography>
+                     <Typography variant="body2" sx={{ color: '#f8fafc', mb: 1,mt:1 }}>From campaign: {n.CampaignId}</Typography>
                   </CardContent>
                 </Card>
               </Grid>
