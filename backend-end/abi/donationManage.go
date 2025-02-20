@@ -31,7 +31,7 @@ var (
 
 // DonationManageMetaData contains all meta data concerning the DonationManage contract.
 var DonationManageMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_nft\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"CancellCampaign\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"CompletedCampaign\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"donater\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Donate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"refunder\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"refundAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"Refund\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"starter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"goal\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"enumDonationsManageContract.CampaignStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"StartCampaign\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"withdrawer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"Withdraw\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"campaignCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"campaigns\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"goal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalDonated\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"enumDonationsManageContract.CampaignStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"starter\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"campaignsToCheck\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"cancellCampaign\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"checkUpkeep\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"upkeepNeeded\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"performData\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"completedCampaign\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_title\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_goal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_endTime\",\"type\":\"uint256\"}],\"name\":\"createCampaign\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"donate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"getCampaignDetails\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"goal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalDonated\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"enumDonationsManageContract.CampaignStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"starter\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"performData\",\"type\":\"bytes\"}],\"name\":\"performUpkeep\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"refundToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_nft\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"CancellCampaign\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"CompletedCampaign\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"donater\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Donate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"refunder\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"refundAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"Refund\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"starter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"goal\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"enumDonationsManageContract.CampaignNature\",\"name\":\"nature\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"enumDonationsManageContract.Beneficiary\",\"name\":\"beneficiary\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"purpose\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"expectedImpact\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"enumDonationsManageContract.CampaignStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"StartCampaign\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"withdrawer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"Withdraw\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"campaignCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"campaigns\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"goal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalDonated\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"enumDonationsManageContract.CampaignNature\",\"name\":\"nature\",\"type\":\"uint8\"},{\"internalType\":\"enumDonationsManageContract.Beneficiary\",\"name\":\"beneficiary\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"purpose\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"expectedImpact\",\"type\":\"string\"},{\"internalType\":\"enumDonationsManageContract.CampaignStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"starter\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"campaignsToCheck\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"cancellCampaign\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"checkUpkeep\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"upkeepNeeded\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"performData\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"completedCampaign\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_title\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_goal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_endTime\",\"type\":\"uint256\"},{\"internalType\":\"enumDonationsManageContract.CampaignNature\",\"name\":\"_nature\",\"type\":\"uint8\"},{\"internalType\":\"enumDonationsManageContract.Beneficiary\",\"name\":\"_beneficiary\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"_purpose\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_expectedImpact\",\"type\":\"string\"}],\"name\":\"createCampaign\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"donate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"getCampaignDetails\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"goal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalDonated\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"enumDonationsManageContract.CampaignStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"starter\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"performData\",\"type\":\"bytes\"}],\"name\":\"performUpkeep\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"refundToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_campaignId\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // DonationManageABI is the input ABI used to generate the binding from.
@@ -213,27 +213,35 @@ func (_DonationManage *DonationManageCallerSession) CampaignCount() (*big.Int, e
 
 // Campaigns is a free data retrieval call binding the contract method 0x141961bc.
 //
-// Solidity: function campaigns(uint256 ) view returns(string title, uint256 goal, uint256 totalDonated, uint256 startTime, uint256 endTime, uint8 status, address starter)
+// Solidity: function campaigns(uint256 ) view returns(string title, uint256 goal, uint256 totalDonated, uint256 startTime, uint256 endTime, uint8 nature, uint8 beneficiary, string purpose, string expectedImpact, uint8 status, address starter)
 func (_DonationManage *DonationManageCaller) Campaigns(opts *bind.CallOpts, arg0 *big.Int) (struct {
-	Title        string
-	Goal         *big.Int
-	TotalDonated *big.Int
-	StartTime    *big.Int
-	EndTime      *big.Int
-	Status       uint8
-	Starter      common.Address
+	Title          string
+	Goal           *big.Int
+	TotalDonated   *big.Int
+	StartTime      *big.Int
+	EndTime        *big.Int
+	Nature         uint8
+	Beneficiary    uint8
+	Purpose        string
+	ExpectedImpact string
+	Status         uint8
+	Starter        common.Address
 }, error) {
 	var out []interface{}
 	err := _DonationManage.contract.Call(opts, &out, "campaigns", arg0)
 
 	outstruct := new(struct {
-		Title        string
-		Goal         *big.Int
-		TotalDonated *big.Int
-		StartTime    *big.Int
-		EndTime      *big.Int
-		Status       uint8
-		Starter      common.Address
+		Title          string
+		Goal           *big.Int
+		TotalDonated   *big.Int
+		StartTime      *big.Int
+		EndTime        *big.Int
+		Nature         uint8
+		Beneficiary    uint8
+		Purpose        string
+		ExpectedImpact string
+		Status         uint8
+		Starter        common.Address
 	})
 	if err != nil {
 		return *outstruct, err
@@ -244,8 +252,12 @@ func (_DonationManage *DonationManageCaller) Campaigns(opts *bind.CallOpts, arg0
 	outstruct.TotalDonated = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
 	outstruct.StartTime = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
 	outstruct.EndTime = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
-	outstruct.Status = *abi.ConvertType(out[5], new(uint8)).(*uint8)
-	outstruct.Starter = *abi.ConvertType(out[6], new(common.Address)).(*common.Address)
+	outstruct.Nature = *abi.ConvertType(out[5], new(uint8)).(*uint8)
+	outstruct.Beneficiary = *abi.ConvertType(out[6], new(uint8)).(*uint8)
+	outstruct.Purpose = *abi.ConvertType(out[7], new(string)).(*string)
+	outstruct.ExpectedImpact = *abi.ConvertType(out[8], new(string)).(*string)
+	outstruct.Status = *abi.ConvertType(out[9], new(uint8)).(*uint8)
+	outstruct.Starter = *abi.ConvertType(out[10], new(common.Address)).(*common.Address)
 
 	return *outstruct, err
 
@@ -253,30 +265,38 @@ func (_DonationManage *DonationManageCaller) Campaigns(opts *bind.CallOpts, arg0
 
 // Campaigns is a free data retrieval call binding the contract method 0x141961bc.
 //
-// Solidity: function campaigns(uint256 ) view returns(string title, uint256 goal, uint256 totalDonated, uint256 startTime, uint256 endTime, uint8 status, address starter)
+// Solidity: function campaigns(uint256 ) view returns(string title, uint256 goal, uint256 totalDonated, uint256 startTime, uint256 endTime, uint8 nature, uint8 beneficiary, string purpose, string expectedImpact, uint8 status, address starter)
 func (_DonationManage *DonationManageSession) Campaigns(arg0 *big.Int) (struct {
-	Title        string
-	Goal         *big.Int
-	TotalDonated *big.Int
-	StartTime    *big.Int
-	EndTime      *big.Int
-	Status       uint8
-	Starter      common.Address
+	Title          string
+	Goal           *big.Int
+	TotalDonated   *big.Int
+	StartTime      *big.Int
+	EndTime        *big.Int
+	Nature         uint8
+	Beneficiary    uint8
+	Purpose        string
+	ExpectedImpact string
+	Status         uint8
+	Starter        common.Address
 }, error) {
 	return _DonationManage.Contract.Campaigns(&_DonationManage.CallOpts, arg0)
 }
 
 // Campaigns is a free data retrieval call binding the contract method 0x141961bc.
 //
-// Solidity: function campaigns(uint256 ) view returns(string title, uint256 goal, uint256 totalDonated, uint256 startTime, uint256 endTime, uint8 status, address starter)
+// Solidity: function campaigns(uint256 ) view returns(string title, uint256 goal, uint256 totalDonated, uint256 startTime, uint256 endTime, uint8 nature, uint8 beneficiary, string purpose, string expectedImpact, uint8 status, address starter)
 func (_DonationManage *DonationManageCallerSession) Campaigns(arg0 *big.Int) (struct {
-	Title        string
-	Goal         *big.Int
-	TotalDonated *big.Int
-	StartTime    *big.Int
-	EndTime      *big.Int
-	Status       uint8
-	Starter      common.Address
+	Title          string
+	Goal           *big.Int
+	TotalDonated   *big.Int
+	StartTime      *big.Int
+	EndTime        *big.Int
+	Nature         uint8
+	Beneficiary    uint8
+	Purpose        string
+	ExpectedImpact string
+	Status         uint8
+	Starter        common.Address
 }, error) {
 	return _DonationManage.Contract.Campaigns(&_DonationManage.CallOpts, arg0)
 }
@@ -500,25 +520,25 @@ func (_DonationManage *DonationManageTransactorSession) CompletedCampaign(_campa
 	return _DonationManage.Contract.CompletedCampaign(&_DonationManage.TransactOpts, _campaignId)
 }
 
-// CreateCampaign is a paid mutator transaction binding the contract method 0xb5a898ae.
+// CreateCampaign is a paid mutator transaction binding the contract method 0x9d1a3691.
 //
-// Solidity: function createCampaign(string _title, uint256 _goal, uint256 _startTime, uint256 _endTime) returns()
-func (_DonationManage *DonationManageTransactor) CreateCampaign(opts *bind.TransactOpts, _title string, _goal *big.Int, _startTime *big.Int, _endTime *big.Int) (*types.Transaction, error) {
-	return _DonationManage.contract.Transact(opts, "createCampaign", _title, _goal, _startTime, _endTime)
+// Solidity: function createCampaign(string _title, uint256 _goal, uint256 _startTime, uint256 _endTime, uint8 _nature, uint8 _beneficiary, string _purpose, string _expectedImpact) returns()
+func (_DonationManage *DonationManageTransactor) CreateCampaign(opts *bind.TransactOpts, _title string, _goal *big.Int, _startTime *big.Int, _endTime *big.Int, _nature uint8, _beneficiary uint8, _purpose string, _expectedImpact string) (*types.Transaction, error) {
+	return _DonationManage.contract.Transact(opts, "createCampaign", _title, _goal, _startTime, _endTime, _nature, _beneficiary, _purpose, _expectedImpact)
 }
 
-// CreateCampaign is a paid mutator transaction binding the contract method 0xb5a898ae.
+// CreateCampaign is a paid mutator transaction binding the contract method 0x9d1a3691.
 //
-// Solidity: function createCampaign(string _title, uint256 _goal, uint256 _startTime, uint256 _endTime) returns()
-func (_DonationManage *DonationManageSession) CreateCampaign(_title string, _goal *big.Int, _startTime *big.Int, _endTime *big.Int) (*types.Transaction, error) {
-	return _DonationManage.Contract.CreateCampaign(&_DonationManage.TransactOpts, _title, _goal, _startTime, _endTime)
+// Solidity: function createCampaign(string _title, uint256 _goal, uint256 _startTime, uint256 _endTime, uint8 _nature, uint8 _beneficiary, string _purpose, string _expectedImpact) returns()
+func (_DonationManage *DonationManageSession) CreateCampaign(_title string, _goal *big.Int, _startTime *big.Int, _endTime *big.Int, _nature uint8, _beneficiary uint8, _purpose string, _expectedImpact string) (*types.Transaction, error) {
+	return _DonationManage.Contract.CreateCampaign(&_DonationManage.TransactOpts, _title, _goal, _startTime, _endTime, _nature, _beneficiary, _purpose, _expectedImpact)
 }
 
-// CreateCampaign is a paid mutator transaction binding the contract method 0xb5a898ae.
+// CreateCampaign is a paid mutator transaction binding the contract method 0x9d1a3691.
 //
-// Solidity: function createCampaign(string _title, uint256 _goal, uint256 _startTime, uint256 _endTime) returns()
-func (_DonationManage *DonationManageTransactorSession) CreateCampaign(_title string, _goal *big.Int, _startTime *big.Int, _endTime *big.Int) (*types.Transaction, error) {
-	return _DonationManage.Contract.CreateCampaign(&_DonationManage.TransactOpts, _title, _goal, _startTime, _endTime)
+// Solidity: function createCampaign(string _title, uint256 _goal, uint256 _startTime, uint256 _endTime, uint8 _nature, uint8 _beneficiary, string _purpose, string _expectedImpact) returns()
+func (_DonationManage *DonationManageTransactorSession) CreateCampaign(_title string, _goal *big.Int, _startTime *big.Int, _endTime *big.Int, _nature uint8, _beneficiary uint8, _purpose string, _expectedImpact string) (*types.Transaction, error) {
+	return _DonationManage.Contract.CreateCampaign(&_DonationManage.TransactOpts, _title, _goal, _startTime, _endTime, _nature, _beneficiary, _purpose, _expectedImpact)
 }
 
 // Donate is a paid mutator transaction binding the contract method 0x0cdd53f6.
@@ -1259,19 +1279,23 @@ func (it *DonationManageStartCampaignIterator) Close() error {
 
 // DonationManageStartCampaign represents a StartCampaign event raised by the DonationManage contract.
 type DonationManageStartCampaign struct {
-	Id        *big.Int
-	Starter   common.Address
-	Title     string
-	Goal      *big.Int
-	StartTime *big.Int
-	EndTime   *big.Int
-	Status    uint8
-	Raw       types.Log // Blockchain specific contextual infos
+	Id             *big.Int
+	Starter        common.Address
+	Title          string
+	Goal           *big.Int
+	StartTime      *big.Int
+	EndTime        *big.Int
+	Nature         uint8
+	Beneficiary    uint8
+	Purpose        string
+	ExpectedImpact string
+	Status         uint8
+	Raw            types.Log // Blockchain specific contextual infos
 }
 
-// FilterStartCampaign is a free log retrieval operation binding the contract event 0x5dd4303e85365effc8c9d4844c548769a1cbc12b0044bb72c0970894f016026f.
+// FilterStartCampaign is a free log retrieval operation binding the contract event 0xbe3dd7dc6384f58902a35b3dbc09ad6f5cc91b4499b64a64574f25c4c13cdef6.
 //
-// Solidity: event StartCampaign(uint256 indexed id, address starter, string title, uint256 goal, uint256 startTime, uint256 endTime, uint8 status)
+// Solidity: event StartCampaign(uint256 indexed id, address starter, string title, uint256 goal, uint256 startTime, uint256 endTime, uint8 nature, uint8 beneficiary, string purpose, string expectedImpact, uint8 status)
 func (_DonationManage *DonationManageFilterer) FilterStartCampaign(opts *bind.FilterOpts, id []*big.Int) (*DonationManageStartCampaignIterator, error) {
 
 	var idRule []interface{}
@@ -1286,9 +1310,9 @@ func (_DonationManage *DonationManageFilterer) FilterStartCampaign(opts *bind.Fi
 	return &DonationManageStartCampaignIterator{contract: _DonationManage.contract, event: "StartCampaign", logs: logs, sub: sub}, nil
 }
 
-// WatchStartCampaign is a free log subscription operation binding the contract event 0x5dd4303e85365effc8c9d4844c548769a1cbc12b0044bb72c0970894f016026f.
+// WatchStartCampaign is a free log subscription operation binding the contract event 0xbe3dd7dc6384f58902a35b3dbc09ad6f5cc91b4499b64a64574f25c4c13cdef6.
 //
-// Solidity: event StartCampaign(uint256 indexed id, address starter, string title, uint256 goal, uint256 startTime, uint256 endTime, uint8 status)
+// Solidity: event StartCampaign(uint256 indexed id, address starter, string title, uint256 goal, uint256 startTime, uint256 endTime, uint8 nature, uint8 beneficiary, string purpose, string expectedImpact, uint8 status)
 func (_DonationManage *DonationManageFilterer) WatchStartCampaign(opts *bind.WatchOpts, sink chan<- *DonationManageStartCampaign, id []*big.Int) (event.Subscription, error) {
 
 	var idRule []interface{}
@@ -1328,9 +1352,9 @@ func (_DonationManage *DonationManageFilterer) WatchStartCampaign(opts *bind.Wat
 	}), nil
 }
 
-// ParseStartCampaign is a log parse operation binding the contract event 0x5dd4303e85365effc8c9d4844c548769a1cbc12b0044bb72c0970894f016026f.
+// ParseStartCampaign is a log parse operation binding the contract event 0xbe3dd7dc6384f58902a35b3dbc09ad6f5cc91b4499b64a64574f25c4c13cdef6.
 //
-// Solidity: event StartCampaign(uint256 indexed id, address starter, string title, uint256 goal, uint256 startTime, uint256 endTime, uint8 status)
+// Solidity: event StartCampaign(uint256 indexed id, address starter, string title, uint256 goal, uint256 startTime, uint256 endTime, uint8 nature, uint8 beneficiary, string purpose, string expectedImpact, uint8 status)
 func (_DonationManage *DonationManageFilterer) ParseStartCampaign(log types.Log) (*DonationManageStartCampaign, error) {
 	event := new(DonationManageStartCampaign)
 	if err := _DonationManage.contract.UnpackLog(event, "StartCampaign", log); err != nil {

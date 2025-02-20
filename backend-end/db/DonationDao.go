@@ -1,8 +1,11 @@
 package db
 
 import (
+	"strconv"
+
 	"github.com/haitao-sun03/go/common"
 	"github.com/haitao-sun03/go/config"
+	"github.com/haitao-sun03/go/dto"
 	"github.com/haitao-sun03/go/model"
 	"github.com/haitao-sun03/go/vo"
 	"gorm.io/gorm"
@@ -41,4 +44,58 @@ func (donationDao *DonationDao) GetDonationListOfCampaign(pageDonation vo.PageDo
 	}
 
 	return donations, total, nil
+}
+
+func (donationDao *DonationDao) GetNftOfUser(nftVO vo.NftVO) ([]dto.NftLevelDTO, error) {
+	var donations []model.DonationModel
+	var metadatas []model.NFTMetaDataMedal
+	var nftDTOs []dto.NftLevelDTO
+
+	// 查询用户的所有捐赠记录，且已铸造NFT的
+	err := donationDao.db.Where("donor = ? AND mint_level != ''", nftVO.User).
+		Find(&donations).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取所有NFT元数据
+	err = donationDao.db.Find(&metadatas).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 构建元数据映射
+	metaMap := make(map[string]string)
+	for _, meta := range metadatas {
+		metaMap[meta.Level] = meta.URI
+	}
+
+	// 按NFT等级分组的映射
+	nftLevelMap := make(map[string]*dto.NftLevelDTO)
+
+	// 组装DTO
+	for _, donation := range donations {
+		level := donation.MintLevel
+		// 如果这个等级的NFT还没有创建，就创建一个新的
+		if _, exists := nftLevelMap[level]; !exists {
+			nftLevelMap[level] = &dto.NftLevelDTO{
+				NftLevel: level,
+				MetaData: metaMap[level],
+				Nfts:     []dto.Nft{},
+			}
+		}
+
+		// 添加这个捐赠对应的NFT
+		campaignID, _ := strconv.ParseUint(donation.CampaignID, 10, 64)
+		nftLevelMap[level].Nfts = append(nftLevelMap[level].Nfts, dto.Nft{
+			CampaignId: uint(campaignID),
+		})
+	}
+
+	// 将map转换为slice
+	for _, nftDTO := range nftLevelMap {
+		nftDTOs = append(nftDTOs, *nftDTO)
+	}
+
+	return nftDTOs, nil
 }

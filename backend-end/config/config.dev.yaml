@@ -48,7 +48,6 @@ logging:
 geth:
   wsAddress: "ws://localhost:8545"
   address: "https://localhost:8545"
-  keystorePath: "/geth/dev/keystore"
   donationContract:
     address: "0xA03384C52E88b60cecc00EEF44f827caECe072b5"
     abiPath: "abi/donation.abi"

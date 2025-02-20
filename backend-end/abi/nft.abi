@@ -247,6 +247,56 @@
 		"anonymous": false,
 		"inputs": [
 			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "level",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "uri",
+						"type": "string"
+					}
+				],
+				"indexed": false,
+				"internalType": "struct NFT.LevelMetaDataURI[]",
+				"name": "levelToMetaDataURIs",
+				"type": "tuple[]"
+			}
+		],
+		"name": "NFTDeployed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "level",
+				"type": "string"
+			}
+		],
+		"name": "NFTMinted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
 				"indexed": true,
 				"internalType": "address",
 				"name": "previousOwner",
@@ -677,6 +727,13 @@
 			}
 		],
 		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "triggerNFTDeployedEvent",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

@@ -36,6 +36,9 @@ func Router() *gin.Engine {
 
 	donation := r.Group("/donation")
 	donation.POST("/list", controllers.DonationController{}.GetDonationsOfCampaign)
+
+	nft := r.Group("/nft")
+	nft.POST("/nftGroupByUser", controllers.NftController{}.GetNfts)
 	return r
 
 }

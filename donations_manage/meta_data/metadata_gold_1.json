@@ -1,0 +1,23 @@
+{
+  "name": "Gold Coin",
+  "description": "This NFT is awarded to individuals who have contributed at least 50% towards our fundraising campaign goal. Your substantial support is greatly appreciated and has significantly advanced our cause. Thank you for your generosity!",  "image": "ipfs://QmcvWYZoi3DPhZszdaf9DSwRPfwWKxU9dppBpGQvNV5JhS",
+  "attributes": [
+    {
+      "trait_type": "Donation Level",
+      "value": "Gold"
+    },
+    {
+      "trait_type": "Contribution",
+      "value": "Substantial"
+    },
+    {
+      "trait_type": "Threshold",
+      "value": "50%"
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Uncommon"
+    }
+  ],
+  "external_url": "https://github.com/haitao-sun03/donation"
+}

@@ -53,10 +53,6 @@ func PaginationFunc(db *gorm.DB, pageNum int, pageSize int) {
 	db.Offset(offset).Limit(pageSize)
 }
 
-// func InitAccountPathInController() {
-// 	AccountPath = fmt.Sprint(config.Config.Geth.KeystorePath, "/UTC--2024-11-28T03-26-22.871269100Z--6c0db8c49190b517b949429b9dea1c2b32143bd2")
-// }
-
 func ConstructTransactionOpts(gethClient *ethclient.Client, privateKey *ecdsa.PrivateKey, ctx *gin.Context, gasLimit, gasTipCap, GasFeeCap int64) (*bind.TransactOpts, bool) {
 	// 获取链ID
 	chainID, err := gethClient.ChainID(context.Background())

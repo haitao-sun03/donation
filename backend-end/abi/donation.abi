@@ -162,6 +162,30 @@
 			},
 			{
 				"indexed": false,
+				"internalType": "enum DonationsManageContract.CampaignNature",
+				"name": "nature",
+				"type": "uint8"
+			},
+			{
+				"indexed": false,
+				"internalType": "enum DonationsManageContract.Beneficiary",
+				"name": "beneficiary",
+				"type": "uint8"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "purpose",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "expectedImpact",
+				"type": "string"
+			},
+			{
+				"indexed": false,
 				"internalType": "enum DonationsManageContract.CampaignStatus",
 				"name": "status",
 				"type": "uint8"
@@ -248,6 +272,26 @@
 				"internalType": "uint256",
 				"name": "endTime",
 				"type": "uint256"
+			},
+			{
+				"internalType": "enum DonationsManageContract.CampaignNature",
+				"name": "nature",
+				"type": "uint8"
+			},
+			{
+				"internalType": "enum DonationsManageContract.Beneficiary",
+				"name": "beneficiary",
+				"type": "uint8"
+			},
+			{
+				"internalType": "string",
+				"name": "purpose",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "expectedImpact",
+				"type": "string"
 			},
 			{
 				"internalType": "enum DonationsManageContract.CampaignStatus",
@@ -353,6 +397,26 @@
 				"internalType": "uint256",
 				"name": "_endTime",
 				"type": "uint256"
+			},
+			{
+				"internalType": "enum DonationsManageContract.CampaignNature",
+				"name": "_nature",
+				"type": "uint8"
+			},
+			{
+				"internalType": "enum DonationsManageContract.Beneficiary",
+				"name": "_beneficiary",
+				"type": "uint8"
+			},
+			{
+				"internalType": "string",
+				"name": "_purpose",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_expectedImpact",
+				"type": "string"
 			}
 		],
 		"name": "createCampaign",

@@ -6,8 +6,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     from: deployer,
     args: [
       deployer, // initialOwner
-      "DonationToken", // _name
-      "DON" // _symbol
+      "AquaCoin", // _name
+      "AquaCoin" // _symbol
     ],
     log: true,
   });

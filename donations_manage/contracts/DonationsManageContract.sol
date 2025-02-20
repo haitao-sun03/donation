@@ -12,11 +12,28 @@ import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatible
 contract DonationsManageContract is AutomationCompatibleInterface {
     address public owner;
 
+    /// 定义活动性质的枚举
+    enum CampaignNature {
+        Charity,
+        Education,
+        Health,
+        Environment,
+        Other
+    }
+
+    /// 定义受益对象的枚举
+    enum Beneficiary {
+        Individuals,
+        NonProfitOrganizations,
+        Communities,
+        Other
+    }
+
     /// 定义活动状态的枚举
     enum CampaignStatus {
         Pending,    /// 活动未开始
         Active,     /// 活动正在进行
-        Completed,     /// 活动已关闭（可能是达成目标或时间到期）
+        Completed,   /// 活动已关闭（可能是达成目标或时间到期）
         Cancelled   /// 活动已取消
     }
 
@@ -27,6 +44,10 @@ contract DonationsManageContract is AutomationCompatibleInterface {
         uint totalDonated;
         uint startTime;
         uint endTime;
+        CampaignNature nature; // 活动性质
+        Beneficiary beneficiary; // 受益对象
+        string purpose; // 活动目的
+        string expectedImpact; // 预期影响
         mapping(address => uint) donations;
         CampaignStatus status;
         address starter;
@@ -46,7 +67,19 @@ contract DonationsManageContract is AutomationCompatibleInterface {
         _;
     }
 
-    event StartCampaign(uint indexed id,address starter,string title,uint goal,uint startTime,uint endTime,CampaignStatus status);
+    event StartCampaign(
+        uint indexed id,
+        address starter,
+        string title,
+        uint goal,
+        uint startTime,
+        uint endTime,
+        CampaignNature nature, // 新增字段
+        Beneficiary beneficiary, // 新增字段
+        string purpose, // 活动目的
+        string expectedImpact, // 预期影响
+        CampaignStatus status
+    );
     event Donate(uint indexed id,address donater,uint amount);
     event CancellCampaign(uint indexed id,address caller,uint time);
     event CompletedCampaign(uint indexed id,address caller,uint time);
@@ -54,12 +87,20 @@ contract DonationsManageContract is AutomationCompatibleInterface {
     event Withdraw(uint indexed id,address withdrawer,uint withdrawAmount,uint time);
 
     constructor(address _token,address _nft) {
-        // owner = msg.sender;
         token = IERC20(_token);
         nft = NFT(_nft);
     }
 
-    function createCampaign(string memory _title, uint _goal,uint _startTime,uint _endTime) external {
+    function createCampaign(
+        string memory _title,
+        uint _goal,
+        uint _startTime,
+        uint _endTime,
+        CampaignNature _nature, // 新增参数
+        Beneficiary _beneficiary, // 新增参数
+        string memory _purpose, // 新增参数
+        string memory _expectedImpact // 新增参数
+    ) external {
         require(bytes(_title).length > 0, "Title cannot be empty");
         require(_goal > 0,"Invalid goal");
         require(_startTime < _endTime,"_startTime is later than _endTime");
@@ -71,20 +112,24 @@ contract DonationsManageContract is AutomationCompatibleInterface {
         campaign.goal = _goal;
         campaign.startTime = _startTime;
         campaign.endTime = _endTime;
+        campaign.nature = _nature; // 新增赋值
+        campaign.beneficiary = _beneficiary; // 新增赋值
+        campaign.purpose = _purpose; // 新增赋值
+        campaign.expectedImpact = _expectedImpact; // 新增赋值
         campaign.status = block.timestamp > _startTime ? CampaignStatus.Active : CampaignStatus.Pending;
         campaign.starter = msg.sender;
         campaignsToCheck.push(campaignCount);
-        emit StartCampaign(campaignCount,msg.sender,_title,_goal,_startTime,_endTime,campaign.status);
+        emit StartCampaign(campaignCount, msg.sender, _title, _goal, _startTime, _endTime, _nature, _beneficiary, _purpose, _expectedImpact, campaign.status);
     }
 
-    /// owner主动取消活动，另一种情况为到了endTime，goal没有达到，会自动置为cancelled
+    /// starter主动取消活动，另一种情况为到了endTime，goal没有达到，会自动置为cancelled
     function cancellCampaign(uint _campaignId) external onlyStarter(_campaignId) {
         Campaign storage compaign = campaigns[_campaignId];
         compaign.status = CampaignStatus.Cancelled;
         emit CancellCampaign(_campaignId,msg.sender,block.timestamp);
     }
 
-    /// 若在活动时间内，提前reach goal，管理员可手动关闭
+    /// 若在活动时间内，提前reach goal，starter可手动关闭
     function completedCampaign(uint _campaignId) external onlyStarter(_campaignId) {
         Campaign storage compaign = campaigns[_campaignId];
         require(compaign.status == CampaignStatus.Active ,"not active campaign,can not completed");
@@ -145,7 +190,7 @@ contract DonationsManageContract is AutomationCompatibleInterface {
 
             if(block.timestamp > campaign.startTime && block.timestamp < campaign.endTime && campaign.status == CampaignStatus.Pending) {
                 campaign.status = CampaignStatus.Active;
-                emit StartCampaign(campaignId, msg.sender, campaign.title, campaign.goal, campaign.startTime, campaign.endTime,campaign.status);
+                emit StartCampaign(campaignId, msg.sender, campaign.title, campaign.goal, campaign.startTime, campaign.endTime, campaign.nature, campaign.beneficiary, campaign.purpose, campaign.expectedImpact, campaign.status);
             }
 
             if (block.timestamp >= campaign.endTime && campaign.totalDonated < campaign.goal) {
@@ -176,7 +221,7 @@ contract DonationsManageContract is AutomationCompatibleInterface {
         }
     }
 
-    /// 捐赠者调用，用于给某活动捐赠，若达到捐赠目标的20%，赠送nft给捐赠者
+    /// 捐赠者调用，用于给某活动捐赠
     function donate(uint _campaignId,uint _amount) external {
         Campaign storage campaign = campaigns[_campaignId];
         require(campaign.status == CampaignStatus.Active,"the campaign is not start or ended");

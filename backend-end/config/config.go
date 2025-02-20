@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"sync"
 	"time"
 
@@ -22,7 +21,6 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type Configs struct {
@@ -49,7 +47,6 @@ type RedisConfig struct {
 type GethConfig struct {
 	WsAddress        string
 	Address          string
-	KeystorePath     string
 	DonationContract DonationContractConfig
 	NftContract      NftContractConfig
 	Nft              NFTConfig
@@ -133,17 +130,17 @@ func InitDatabase() error {
 		fmt.Println("dsn :", dsn)
 
 		// 配置 GORM Logger
-		newLogger := logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags), // 使用标准输出作为日志写入器
-			logger.Config{
-				LogLevel:      logger.Info,             // 设置日志级别为 Info
-				SlowThreshold: 1000 * time.Millisecond, // 慢 SQL 阈值
-				Colorful:      true,                    // 启用彩色输出
-			},
-		)
+		// newLogger := logger.New(
+		// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // 使用标准输出作为日志写入器
+		// 	logger.Config{
+		// 		LogLevel:      logger.Info,             // 设置日志级别为 Info
+		// 		SlowThreshold: 1000 * time.Millisecond, // 慢 SQL 阈值
+		// 		Colorful:      true,                    // 启用彩色输出
+		// 	},
+		// )
 
 		dbInstance, initErr = gorm.Open(mysql.Open(dsn), &gorm.Config{
-			Logger: newLogger,
+			// Logger: newLogger,
 		})
 
 		if initErr != nil {
@@ -178,6 +175,7 @@ func GetDB() *gorm.DB {
 func AutoMigrate() {
 	dbInstance.AutoMigrate(&model.DonationModel{})
 	dbInstance.AutoMigrate(&model.CampaignModel{})
+	dbInstance.AutoMigrate(&model.NFTMetaDataMedal{})
 }
 
 func InitRedis() {
