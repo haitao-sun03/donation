@@ -201,6 +201,7 @@ const AddCampaign = ({ contractAddress }) => {
               label="Start Time"
               value={startTime}
               onChange={(newValue) => setStartTime(newValue)}
+              ampm={false}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -229,6 +230,7 @@ const AddCampaign = ({ contractAddress }) => {
               value={endTime}
               required
               onChange={(newValue) => setEndTime(newValue)}
+              ampm={false}
               renderInput={(params) => (
                 <TextField
                   {...params}

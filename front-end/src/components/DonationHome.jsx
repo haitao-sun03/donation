@@ -1,23 +1,26 @@
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faChartLine, 
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChartLine,
   faShieldAlt,
-  faHandHoldingUsd
-} from '@fortawesome/free-solid-svg-icons';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-import { config } from '@fortawesome/fontawesome-svg-core';
+  faHandHoldingUsd,
+} from "@fortawesome/free-solid-svg-icons";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+import { config } from "@fortawesome/fontawesome-svg-core";
 config.autoAddCss = false;
-import './DonationHome.css';
+import "./DonationHome.css";
 
 const DonationHome = () => {
   return (
     <div className="donation-home">
       <div className="hero-section">
-        <h1>Welcome to Donation Platform</h1>
-        <p>Connect your wallet to start donating or view donation records</p>
+        <h1>Welcome to Our Web3 Donation Ecosystem</h1>
+        <p>
+          Connect your wallet to fund campaigns with AquaCoin and earn EcoSeed
+          NFTs.
+        </p>
       </div>
-      
+
       <div className="features-section">
         <div className="feature-card">
           <div className="icon-container">

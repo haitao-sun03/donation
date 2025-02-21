@@ -353,45 +353,6 @@ export default function DonationsManage({ provider, signer }) {
 
   const formRef = useRef(null);
 
-  const createCampaign = async (title, goal, duration, timeUnit) => {
-    try {
-      setLoading(true);
-      setTxDialogOpen(true);
-      setTxStatus("Preparing transaction...");
-
-      // Add minimum 3 minute delay before campaign starts
-      const startTime = Math.floor(Date.now() / 1000);
-      const endTime = startTime + duration * timeUnit;
-
-      // Validate time parameters
-      if (endTime <= startTime) {
-        throw new Error("End time must be after start time");
-      }
-      if (duration <= 0) {
-        throw new Error("Duration must be positive");
-      }
-
-      const tx = await contract.createCampaign(
-        title,
-        ethers.parseUnits(goal, 18),
-        startTime,
-        endTime
-      );
-      setTxHash(tx.hash);
-      setTxStatus("Waiting for transaction to finish on-chain...");
-
-      await tx.wait();
-      setTxStatus("Transaction completed successfully");
-      await fetchCampaigns();
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-      setTxDialogOpen(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const [donationAmounts, setDonationAmounts] = useState({});
 
   const donate = async (campaignId) => {
@@ -411,16 +372,16 @@ export default function DonationsManage({ provider, signer }) {
       setTxStatus("Waiting for approval transaction to finish on-chain...");
       setTxDialogOpen(true);
       await approveTx.wait();
-
+      setTxStatus("Approval transaction finished");
       // Then donate tokens
       const tx = await contract.donate(
         campaignId,
         ethers.parseUnits(amount, 18)
       );
       setTxHash(tx.hash);
-      setTxStatus("Waiting for donation transaction to finish on-chain...");
+      setTxStatus("Waiting for donate transaction to finish on-chain...");
       await tx.wait();
-      setTxStatus("Transaction finished");
+      setTxStatus("Donate transaction finished");
       await fetchCampaigns();
       setError(null);
       // Clear donation amount for this campaign
@@ -513,6 +474,7 @@ export default function DonationsManage({ provider, signer }) {
       setTxDialogOpen(true);
       await tx.wait();
       setTxStatus("Transaction finished");
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // 等待 2000 毫秒
       await fetchCampaigns();
       setError(null);
     } catch (err) {
@@ -553,7 +515,7 @@ export default function DonationsManage({ provider, signer }) {
 
       const requestBody = {
         page: isLoadMore ? donationPage + 1 : 1,
-        pageSize: 1,
+        pageSize: 10,
         campaignId: campaignId,
       };
 

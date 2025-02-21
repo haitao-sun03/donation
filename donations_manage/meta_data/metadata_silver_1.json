@@ -1,23 +1,19 @@
 {
-  "name": "Silver Coin",
-  "description": "This NFT is awarded to individuals who have contributed at least 20% towards our fundraising campaign goal. Your meaningful support has made a real difference in our efforts. We are grateful for your contribution!",  "image": "ipfs://QmXVSbA75WevB2EDFDjs69m79UfpC5RLCSoA2yRtxx59Qr",
+  "name": "Silver EcoSeed",
+  "description": "A Silver EcoSeed NFT awarded to donors who contributed 20% or more of a campaign's goal. This token symbolizes the first sprout of hope and support, rewarding your meaningful participation in growing a sustainable ecosystem.",
+  "image": "ipfs://QmdiorofDKiBoVpvnfX2mULAhnArRgZLXzFZsHCb1yzcLu",
   "attributes": [
     {
-      "trait_type": "Donation Level",
+      "trait_type": "Level",
       "value": "Silver"
     },
     {
       "trait_type": "Contribution",
-      "value": "Significant"
-    },
-    {
-      "trait_type": "Threshold",
-      "value": "20%"
+      "value": "20%+"
     },
     {
       "trait_type": "Rarity",
       "value": "Common"
     }
-  ],
-  "external_url": "https://github.com/haitao-sun03/donation"
+  ]
 }

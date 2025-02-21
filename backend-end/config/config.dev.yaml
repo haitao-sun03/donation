@@ -46,15 +46,15 @@ logging:
     - type: console
   
 geth:
-  wsAddress: "ws://localhost:8545"
-  address: "https://localhost:8545"
+  wsAddress: "wss://eth-sepolia.g.alchemy.com/v2/_6dn2JqC0JV9irSos3S9FnkpUafPw6cX"
+  address: "https://eth-sepolia.g.alchemy.com/v2/_6dn2JqC0JV9irSos3S9FnkpUafPw6cX"
   donationContract:
-    address: "0xA03384C52E88b60cecc00EEF44f827caECe072b5"
+    address: "0x4943FBb818f92cCb56C6bb9CF115d5248A1F0Ea7"
     abiPath: "abi/donation.abi"
   nftContract:
-    address: "0x812f60E4e7822A2439504f5806410244136BFbd2"
+    address: "0x58e293dBb1407424D3E0E365e381B98e7196Ea6A"
     abiPath: "abi/nft.abi"
   nft:
-    private_key: "4d793e28b59cae1f0680ebeda1fc70f8019dbd19041c725c02be75f6261962d9"  # NFT合约部署者私钥
-    chain_id: 11155111                    # 链ID(如Goerli=5)
+    privateKey: "4d793e28b59cae1f0680ebeda1fc70f8019dbd19041c725c02be75f6261962d9"
+    chainId: 11155111
 

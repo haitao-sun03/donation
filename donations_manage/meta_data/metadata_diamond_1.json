@@ -1,23 +1,19 @@
 {
-  "name": "Diamond Coin",
-  "description": "This NFT is awarded to individuals who have fully funded our fundraising campaign by contributing 100% of the goal. Your exceptional generosity has made our vision a reality. We are deeply grateful for your monumental contribution!",  "image": "ipfs://QmWMosSMZZbNoTFZFrxTL24PDDUY13ggug74EmaD6C7YRo",
+  "name": "Diamond EcoSeed",
+  "description": "A Diamond EcoSeed NFT awarded to donors who contributed 100% or more of a campaign's goal. This token embodies a fully grown tree of hope, celebrating your extraordinary dedication to building a sustainable future.",
+  "image": "ipfs://QmeJzroqsoveu4STYL6FmA2EaigXnCUpDW6E6XYwj7ioZU",
   "attributes": [
     {
-      "trait_type": "Donation Level",
+      "trait_type": "Level",
       "value": "Diamond"
     },
     {
       "trait_type": "Contribution",
-      "value": "Exceptional"
-    },
-    {
-      "trait_type": "Threshold",
-      "value": "100%"
+      "value": "100%+"
     },
     {
       "trait_type": "Rarity",
       "value": "Legendary"
     }
-  ],
-  "external_url": "https://github.com/haitao-sun03/donation"
+  ]
 }

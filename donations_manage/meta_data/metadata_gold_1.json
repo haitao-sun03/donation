@@ -1,23 +1,19 @@
 {
-  "name": "Gold Coin",
-  "description": "This NFT is awarded to individuals who have contributed at least 50% towards our fundraising campaign goal. Your substantial support is greatly appreciated and has significantly advanced our cause. Thank you for your generosity!",  "image": "ipfs://QmcvWYZoi3DPhZszdaf9DSwRPfwWKxU9dppBpGQvNV5JhS",
+  "name": "Gold EcoSeed",
+  "description": "A Gold EcoSeed NFT awarded to donors who contributed 50% or more of a campaign's goal. This token represents a thriving seedling, honoring your substantial impact on fostering a flourishing ecosystem.",
+  "image": "ipfs://QmQGrtLYXTW8voP6jedLEyJA1VzXX1nf6TpCnDmZ5JGzF6",
   "attributes": [
     {
-      "trait_type": "Donation Level",
+      "trait_type": "Level",
       "value": "Gold"
     },
     {
       "trait_type": "Contribution",
-      "value": "Substantial"
-    },
-    {
-      "trait_type": "Threshold",
-      "value": "50%"
+      "value": "50%+"
     },
     {
       "trait_type": "Rarity",
-      "value": "Uncommon"
+      "value": "Rare"
     }
-  ],
-  "external_url": "https://github.com/haitao-sun03/donation"
+  ]
 }

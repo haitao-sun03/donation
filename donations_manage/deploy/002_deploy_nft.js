@@ -11,11 +11,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log: true,
   });
   // 等待一段时间，让后端服务有时间更新和启动
-  await new Promise(resolve => setTimeout(resolve, 10000)); // 等待30秒，可以根据需要调整时间
+  await new Promise(resolve => setTimeout(resolve, 10000)); // 等待10秒，可以根据需要调整时间
 
   // 获取合约实例后，调用triggerNFTDeployedEvent方法
   const nftContract = await ethers.getContractAt("NFT", deployment.address);
-  await nftContract.triggerNFTDeployedEvent();
+  const tx =await nftContract.triggerNFTDeployedEvent();
+  await tx.wait(); // 等待交易确认
   console.log("NFTDeployed event has been triggered.");
 };
 
