@@ -1,6 +1,6 @@
 {
   "name": "Diamond EcoSeed",
-  "description": "A Diamond EcoSeed NFT awarded to donors who contributed 100% or more of a campaign's goal. This token embodies a fully grown tree of hope, celebrating your extraordinary dedication to building a sustainable future.",
+  "description": "A Diamond EcoSeed NFT awarded to donors who contributed 80% or more of a campaign's goal. This token embodies a fully grown tree of hope, celebrating your extraordinary dedication to building a sustainable future.",
   "image": "ipfs://QmeJzroqsoveu4STYL6FmA2EaigXnCUpDW6E6XYwj7ioZU",
   "attributes": [
     {
@@ -9,7 +9,7 @@
     },
     {
       "trait_type": "Contribution",
-      "value": "100%+"
+      "value": "at least 80%"
     },
     {
       "trait_type": "Rarity",

@@ -1,11 +1,16 @@
-# Donation Project
+# EquaSeed Donation
 
 ## Overview
 
-The Donation Project is a full-stack application that allows users to manage and donate to various campaigns. It consists of three main components:
+Welcome to AquaSeed, a web3-based donation platform is a full-stack application that allows users to manage and donate to various campaigns. It consists of three main components:
 1. **Frontend**: A React application that provides a user interface for interacting with the donation system.
 2. **Backend**: A Go application that handles business logic, database interactions, and API requests.
 3. **Smart Contracts**: Solidity contracts deployed on the Ethereum blockchain for managing donations and campaigns.
+
+   - **DonationsManageContract**: 0x6Cf23549b2678027E4A1dDdC34c59c6255d05D13
+   - **NFT**: 0x0A7Ceb2B9707123ceD34B0f6e444Cc5562bEA3DD
+   - **Token**: 0x8D192A2f68700AEAeA4F5D3ADd666198e2047A81
+   contracts above are deployed on linea sepolia testnet
 
 ## Project Structure
 

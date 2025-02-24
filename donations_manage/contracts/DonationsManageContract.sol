@@ -85,6 +85,7 @@ contract DonationsManageContract is AutomationCompatibleInterface {
     event CompletedCampaign(uint indexed id,address caller,uint time);
     event Refund(uint indexed id,address refunder,uint refundAmount,uint time);
     event Withdraw(uint indexed id,address withdrawer,uint withdrawAmount,uint time);
+    event ActiveCampaign(uint indexed id,address caller,uint time);
 
     constructor(address _token,address _nft) {
         token = IERC20(_token);
@@ -122,9 +123,18 @@ contract DonationsManageContract is AutomationCompatibleInterface {
         emit StartCampaign(campaignCount, msg.sender, _title, _goal, _startTime, _endTime, _nature, _beneficiary, _purpose, _expectedImpact, campaign.status);
     }
 
+    /// 手动将活动状态变为active,有些网络不支持chainlink automation，需要手动触发
+    function activeCampaign(uint _campaignId) external onlyStarter(_campaignId) {
+        Campaign storage compaign = campaigns[_campaignId];
+        require(compaign.status == CampaignStatus.Pending,"the campaign is not pending,can not active");
+        compaign.status = CampaignStatus.Active;
+        emit ActiveCampaign(_campaignId, msg.sender, block.timestamp);
+    }
+
     /// starter主动取消活动，另一种情况为到了endTime，goal没有达到，会自动置为cancelled
     function cancellCampaign(uint _campaignId) external onlyStarter(_campaignId) {
         Campaign storage compaign = campaigns[_campaignId];
+        require(compaign.status != CampaignStatus.Completed,"the campaign is completed,can not cancell");
         compaign.status = CampaignStatus.Cancelled;
         emit CancellCampaign(_campaignId,msg.sender,block.timestamp);
     }
@@ -132,7 +142,7 @@ contract DonationsManageContract is AutomationCompatibleInterface {
     /// 若在活动时间内，提前reach goal，starter可手动关闭
     function completedCampaign(uint _campaignId) external onlyStarter(_campaignId) {
         Campaign storage compaign = campaigns[_campaignId];
-        require(compaign.status == CampaignStatus.Active ,"not active campaign,can not completed");
+        require(compaign.status == CampaignStatus.Active ,"the campaign is not active ,can not completed");
         require(compaign.totalDonated >= compaign.goal ,"goal is not reach");
         compaign.status = CampaignStatus.Completed;
         emit CompletedCampaign(_campaignId,msg.sender,block.timestamp);
@@ -190,7 +200,7 @@ contract DonationsManageContract is AutomationCompatibleInterface {
 
             if(block.timestamp > campaign.startTime && block.timestamp < campaign.endTime && campaign.status == CampaignStatus.Pending) {
                 campaign.status = CampaignStatus.Active;
-                emit StartCampaign(campaignId, msg.sender, campaign.title, campaign.goal, campaign.startTime, campaign.endTime, campaign.nature, campaign.beneficiary, campaign.purpose, campaign.expectedImpact, campaign.status);
+                emit ActiveCampaign(campaignId, msg.sender, block.timestamp);
             }
 
             if (block.timestamp >= campaign.endTime && campaign.totalDonated < campaign.goal) {

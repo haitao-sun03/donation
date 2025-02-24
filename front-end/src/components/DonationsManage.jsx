@@ -122,7 +122,12 @@ const theme = createTheme({
   },
 });
 
-export default function DonationsManage({ provider, signer }) {
+export default function DonationsManage({
+  provider,
+  signer,
+  onBalanceUpdate,
+  onSymbolUpdate,
+}) {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -207,7 +212,9 @@ export default function DonationsManage({ provider, signer }) {
 
       // Refresh token balance
       const newBalance = await tokenContract.balanceOf(currentAddress);
-      setBalance(ethers.formatUnits(newBalance, 18));
+      if (onBalanceUpdate) {
+        onBalanceUpdate(ethers.formatUnits(newBalance, 18));
+      }
 
       // Clear amount input
       e.target.reset();
@@ -222,7 +229,6 @@ export default function DonationsManage({ provider, signer }) {
   const [contract, setContract] = useState(null);
   const [tokenContract, setTokenContract] = useState(null);
   const [currentAddress, setCurrentAddress] = useState("");
-  const [balance, setBalance] = useState("0");
   const [tokenSymbol, setTokenSymbol] = useState("");
 
   useEffect(() => {
@@ -247,10 +253,17 @@ export default function DonationsManage({ provider, signer }) {
           setTokenContract(token);
 
           const balance = await token.balanceOf(address);
-          setBalance(ethers.formatUnits(balance, 18));
-
+          const formattedBalance = ethers.formatUnits(balance, 18);
           const symbol = await token.symbol();
           setTokenSymbol(symbol);
+
+          // 调用回调函数，将余额传递给父组件
+          if (onBalanceUpdate) {
+            onBalanceUpdate(formattedBalance);
+          }
+          if (onSymbolUpdate) {
+            onSymbolUpdate(symbol);
+          }
         } catch (error) {
           console.error("Error initializing contracts:", error);
           setError("Failed to initialize contracts");
@@ -267,11 +280,9 @@ export default function DonationsManage({ provider, signer }) {
     };
 
     init();
-  }, [provider, signer]);
+  }, [provider, signer, onBalanceUpdate]);
 
-  const fetchCampaigns = async (
-    isLoadMore = false
-  ) => {
+  const fetchCampaigns = async (isLoadMore = false) => {
     try {
       console.log("isLoadMore", isLoadMore);
 
@@ -351,8 +362,6 @@ export default function DonationsManage({ provider, signer }) {
     }
   };
 
-  const formRef = useRef(null);
-
   const [donationAmounts, setDonationAmounts] = useState({});
 
   const donate = async (campaignId) => {
@@ -382,7 +391,12 @@ export default function DonationsManage({ provider, signer }) {
       setTxStatus("Waiting for donate transaction to finish on-chain...");
       await tx.wait();
       setTxStatus("Donate transaction finished");
+      const newBalance = await tokenContract.balanceOf(currentAddress);
+      if (onBalanceUpdate) {
+        onBalanceUpdate(ethers.formatUnits(newBalance, 18));
+      }
       await fetchCampaigns();
+      
       setError(null);
       // Clear donation amount for this campaign
       setDonationAmounts((prev) => ({
@@ -402,16 +416,22 @@ export default function DonationsManage({ provider, signer }) {
       setLoading(true);
       const tx = await contract.refundToken(campaignId);
       setTxHash(tx.hash);
-      setTxStatus("Waiting for transaction to finish on-chain...");
+      setTxStatus("Waiting for refund transaction to finish on-chain...");
       setTxDialogOpen(true);
       await tx.wait();
-      setTxStatus("Transaction finished");
+      setTxStatus("Refund transaction finished");
 
+      let newBalance
       // 重新加载数据
       await Promise.all([
         fetchCampaigns(), // 刷新活动列表
+        newBalance = await tokenContract.balanceOf(currentAddress),
         fetchDonationDetails(campaignId), // 刷新捐赠详情
       ]);
+
+      if (onBalanceUpdate) {
+        onBalanceUpdate(ethers.formatUnits(newBalance, 18));
+      }
 
       setError(null);
     } catch (err) {
@@ -451,10 +471,14 @@ export default function DonationsManage({ provider, signer }) {
 
       const tx = await contract.withdraw(campaignId);
       setTxHash(tx.hash);
-      setTxStatus("Waiting for transaction to finish on-chain...");
+      setTxStatus("Waiting for withdraw transaction to finish on-chain...");
       setTxDialogOpen(true);
       await tx.wait();
-      setTxStatus("Transaction finished");
+      setTxStatus("Withdraw transaction finished");
+      const newBalance = await tokenContract.balanceOf(currentAddress);
+      if (onBalanceUpdate) {
+        onBalanceUpdate(ethers.formatUnits(newBalance, 18));
+      }
       await fetchCampaigns();
       setError(null);
     } catch (err) {
@@ -470,10 +494,10 @@ export default function DonationsManage({ provider, signer }) {
       setLoading(true);
       const tx = await contract.completedCampaign(campaignId);
       setTxHash(tx.hash);
-      setTxStatus("Waiting for transaction to finish on-chain...");
+      setTxStatus("Waiting for complete transaction to finish on-chain...");
       setTxDialogOpen(true);
       await tx.wait();
-      setTxStatus("Transaction finished");
+      setTxStatus("Complete transaction finished");
       await new Promise((resolve) => setTimeout(resolve, 2000)); // 等待 2000 毫秒
       await fetchCampaigns();
       setError(null);
@@ -490,10 +514,29 @@ export default function DonationsManage({ provider, signer }) {
       setLoading(true);
       const tx = await contract.cancellCampaign(campaignId);
       setTxHash(tx.hash);
-      setTxStatus("Waiting for transaction to finish on-chain...");
+      setTxStatus("Waiting for cancel transaction to finish on-chain...");
       setTxDialogOpen(true);
       await tx.wait();
-      setTxStatus("Transaction finished");
+      setTxStatus("Cancel transaction finished");
+      await fetchCampaigns();
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      setTxDialogOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const activeCampaign = async (campaignId) => {
+    try {
+      setLoading(true);
+      const tx = await contract.activeCampaign(campaignId);
+      setTxHash(tx.hash); 
+      setTxStatus("Waiting for avtive transaction to finish on-chain...");
+      setTxDialogOpen(true);
+      await tx.wait();
+      setTxStatus("Avtive transaction finished");
       await fetchCampaigns();
       setError(null);
     } catch (err) {
@@ -607,8 +650,6 @@ export default function DonationsManage({ provider, signer }) {
       const getTokenInfo = async () => {
         // Get balance and owner
         const balance = await tokenContract.balanceOf(currentAddress);
-        setBalance(ethers.formatUnits(balance, 18));
-
         const symbol = await tokenContract.symbol();
         setTokenSymbol(symbol);
       };
@@ -761,12 +802,7 @@ export default function DonationsManage({ provider, signer }) {
                   {`To make the functionality more convenient to experience, mint
                   ${tokenSymbol} for the current user.`}
                 </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <AccountBalanceWalletIcon />
-                  <Typography variant="body1" gutterBottom>
-                    {` ${balance}  ${tokenSymbol}`}
-                  </Typography>
-                </Box>
+
                 <Box
                   component="form"
                   onSubmit={async (e) => {
@@ -927,28 +963,23 @@ export default function DonationsManage({ provider, signer }) {
                             {campaign.goal
                               ? ethers.formatUnits(campaign.goal, 18)
                               : "0"}{" "}
-                            Tokens
                           </Typography>
                           <Typography variant="body1" gutterBottom>
                             Raised:{" "}
                             {campaign.totalDonated
                               ? ethers.formatUnits(campaign.totalDonated, 18)
                               : "0"}{" "}
-                            Tokens
                           </Typography>
 
                           <Typography variant="body1" gutterBottom>
-                            Start Time:{" "}
+                            Time:{" "}
                             {new Date(
                               Number(campaign.startTime) * 1000
+                            ).toLocaleString()}{" "}
+                            {" ~ "}
+                            {new Date(
+                              Number(campaign.endTime) * 1000
                             ).toLocaleString()}
-                          </Typography>
-
-                          <Typography variant="body1" gutterBottom>
-                            Duration:{" "}
-                            {formatDuration(
-                              campaign.endTime - campaign.startTime
-                            )}
                           </Typography>
 
                           <Typography variant="body1" gutterBottom>
@@ -1099,7 +1130,7 @@ export default function DonationsManage({ provider, signer }) {
                             {loading ? (
                               <CircularProgress size={24} />
                             ) : (
-                              "Donate Tokens"
+                              "Donate"
                             )}
                           </Button>
                         </CardActions>
@@ -1175,6 +1206,30 @@ export default function DonationsManage({ provider, signer }) {
                                   <CircularProgress size={24} />
                                 ) : (
                                   "Cancel"
+                                )}
+                              </Button>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Button
+                                variant="outlined"
+                                color="success"
+                                fullWidth
+                                onClick={() => activeCampaign(campaign.id)}
+                                disabled={
+                                  loading ||
+                                  !campaign.starter ||
+                                  !currentAddress ||
+                                  !isAddressMatch(
+                                    campaign.starter,
+                                    currentAddress
+                                  ) ||
+                                  Number(campaign.status) !== 0
+                                }
+                              >
+                                {loading ? (
+                                  <CircularProgress size={24} />
+                                ) : (
+                                  "Active"
                                 )}
                               </Button>
                             </Grid>
@@ -1285,7 +1340,6 @@ export default function DonationsManage({ provider, signer }) {
                           <TableHead>
                             <TableRow>
                               <TableCell
-
                                 sx={{
                                   background: "rgba(31,41,55,0.95)",
                                   color: "#94a3b8",
@@ -1393,7 +1447,6 @@ export default function DonationsManage({ provider, signer }) {
                                   {donation.amount
                                     ? ethers.formatUnits(donation.amount, 18)
                                     : 0}
-                                  
                                 </TableCell>
                                 <TableCell
                                   align="center"

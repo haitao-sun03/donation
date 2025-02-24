@@ -5,9 +5,9 @@ import './index.css'
 
 // Contract addresses
 export const contractAddresses = {
-  token: '0x2df7E7A787057f0FF66fA41bAa91502ce96f1349',
-  nft: '0xEF55F840e37E3C1f24AF005a0505B2B9E42C4Fe5',
-  donations: '0xF604d56825F2f09ed8001cCFBf3C9a0caf8C7882'
+  token: '0x8D192A2f68700AEAeA4F5D3ADd666198e2047A81',
+  nft: '0x0A7Ceb2B9707123ceD34B0f6e444Cc5562bEA3DD',
+  donations: '0x6Cf23549b2678027E4A1dDdC34c59c6255d05D13'
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

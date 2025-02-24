@@ -14,7 +14,7 @@ const DonationHome = () => {
   return (
     <div className="donation-home">
       <div className="hero-section">
-        <h1>Welcome to Our Web3 Donation Ecosystem</h1>
+        <h1>Welcome to AquaSeed , A Web3 Donation Platform</h1>
         <p>
           Connect your wallet to fund campaigns with AquaCoin and earn EcoSeed
           NFTs.

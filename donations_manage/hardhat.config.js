@@ -4,6 +4,7 @@ require("@chainlink/env-enc").config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL
+const LINEA_SEPOLIA_RPC_URL = process.env.LINEA_SEPOLIA_RPC_URL
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -24,5 +25,12 @@ module.exports = {
       chainId :11155111,
       blockConfirmations : 6,
     },
+    lineaSepolia: {
+      gasPrice: "auto",
+      accounts: [process.env.PRIVATE_KEY],
+      url: LINEA_SEPOLIA_RPC_URL,
+      chainId: 59141,
+      blockConfirmations: 6,
+    }
   },
 };

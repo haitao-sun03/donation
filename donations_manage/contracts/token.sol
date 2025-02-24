@@ -10,7 +10,7 @@ contract Token is ERC20, ERC20Burnable, Ownable {
     constructor(address initialOwner,string memory _name, string memory _symbol)
         ERC20(_name, _symbol)
         Ownable(initialOwner) {
-        _mint(msg.sender, 1000 * 10 ** decimals());
+        // _mint(msg.sender, 1000 * 10 ** decimals());
     }
 
     function mint(address to, uint256 amount) public onlyOwner {

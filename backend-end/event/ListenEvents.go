@@ -77,6 +77,7 @@ const (
 	StartCampaignEvent     = "StartCampaign"
 	CancelledCampaignEvent = "CancellCampaign"
 	CompletedCampaignEvent = "CompletedCampaign"
+	ActiveCampaignEvent    = "ActiveCampaign"
 	WithdrawEvent          = "Withdraw"
 	RefundEvent            = "Refund"
 	NftDeployedEvent       = "NFTDeployed"
@@ -92,6 +93,7 @@ var eventHandlers = map[common.Hash]EventHandler{
 	crypto.Keccak256Hash([]byte("Refund(uint256,address,uint256,uint256)")):                                                       &DonationHandler{},
 	crypto.Keccak256Hash([]byte("NFTDeployed(tuple[])")):                                                                          &NFTHandler{},
 	crypto.Keccak256Hash([]byte("NFTDeployed((string,string)[])")):                                                                &NFTHandler{},
+	crypto.Keccak256Hash([]byte("ActiveCampaign(uint256,address,uint256)")):                                                       &CampaignHandler{},
 }
 
 // 基础事件结构

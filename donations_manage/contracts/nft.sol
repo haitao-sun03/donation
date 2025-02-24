@@ -26,9 +26,9 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
     constructor(string memory tokenName,string memory tokenSymol)
         ERC721(tokenName, tokenSymol)
         Ownable(msg.sender) {
-            levelToMetaDataURI["Diamond"] = "ipfs://QmdpeR969xnfBHW56VyJhmkQcqXbnHKyjdoZPbXtATVPjr";
-            levelToMetaDataURI["Gold"] = "ipfs://QmWxPpgzVLJPypyY8BYozwUh2w6SsZUR3QPCekbAo3F2QV";
-            levelToMetaDataURI["Silver"] = "ipfs://QmamqBW8e4rfBXxsaM4rXaKPcdqd3fngTV7X5W9LPxbMnQ";
+            levelToMetaDataURI["Diamond"] = "ipfs://QmXHntjAgjthxXGmtQ33QPPLr3zh5Xy1r7Dnd5y3rQh9Ma";
+            levelToMetaDataURI["Gold"] = "ipfs://QmRysa1LAFq2yBVsQfztVavdJCQC9EHSe2KD9xHm2p8xkt";
+            levelToMetaDataURI["Silver"] = "ipfs://QmWuxajrCBXD8QmS41xbo9mkcMj8PDCMUfBQZsFpP1TWZe";
         }
     
     // 添加一个函数来触发NFTDeployed事件

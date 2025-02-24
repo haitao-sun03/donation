@@ -49,6 +49,8 @@ func (h *CampaignHandler) Parse(vLog types.Log) (interface{}, error) {
 		return parseCompleteCampaignEvent(vLog)
 	case crypto.Keccak256Hash([]byte("Withdraw(uint256,address,uint256,uint256)")):
 		return parseWithdrawEvent(vLog)
+	case crypto.Keccak256Hash([]byte("ActiveCampaign(uint256,address,uint256)")):
+		return parseActiveCampaignEvent(vLog)
 	default:
 		return nil, fmt.Errorf("unsupported campaign event")
 	}
@@ -154,6 +156,39 @@ type CampaignIsWithdrawRecord struct {
 	Timestamp  *big.Int
 	IsWithdraw uint8
 	BaseEvent
+}
+
+func parseActiveCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
+	contractAbi := getContractABI(CampaignRelContract)
+
+	var event struct {
+		Id     *big.Int
+		Caller common.Address
+		Time   *big.Int
+	}
+
+	if err := contractAbi.UnpackIntoInterface(&event, ActiveCampaignEvent, vLog.Data); err != nil {
+		return nil, fmt.Errorf("failed to unpack ActiveCampaignEvent event: %v", err)
+	}
+
+	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
+
+	header, err := getBlockHeader(vLog.BlockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	return &CampaignStatusRecord{
+		CampaignID: campaignId,
+		Caller:     event.Caller,
+		Timestamp:  event.Time,
+		Status:     model.CampaignStatusActive,
+		BaseEvent: BaseEvent{
+			EventType: ActiveCampaignEvent,
+			BlockTime: header.Time,
+			TxHash:    vLog.TxHash,
+		},
+	}, nil
 }
 
 func parseCancelCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
@@ -310,7 +345,7 @@ func checkMintNFTOfTheCampaign(tx *gorm.DB, record *CampaignStatusRecord, campai
 			percent int
 			level   string
 		}{
-			{100, model.Diamond},
+			{80, model.Diamond},
 			{50, model.Gold},
 			{20, model.Silver},
 		}
