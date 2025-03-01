@@ -48,7 +48,7 @@ func (donationDao *DonationDao) GetDonationListOfCampaign(pageDonation vo.PageDo
 
 func (donationDao *DonationDao) GetNftOfUser(nftVO vo.NftVO) ([]dto.NftLevelDTO, error) {
 	var donations []model.DonationModel
-	var metadatas []model.NFTMetaDataMedal
+	var metadatas []model.NFTMetaDataModel
 	var nftDTOs []dto.NftLevelDTO
 
 	// 查询用户的所有捐赠记录，且已铸造NFT的

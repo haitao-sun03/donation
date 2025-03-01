@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/haitao-sun03/go/event"
@@ -11,12 +15,8 @@ import (
 )
 
 func main() {
-	defer config.RoutinePool.ReleaseTimeout(5 * time.Second)
-	// defer config.RedisClient.Close()
 
 	config.Init()
-	// controllers.InitAccountPathInController()
-	// go event.ListenEvents()
 	config.RoutinePool.Submit(func() {
 		event.ListenEvents()
 	})
@@ -27,5 +27,19 @@ func main() {
 		}
 	})
 	r := routers.Router()
-	r.Run(":9999")
+	config.RoutinePool.Submit(func() {
+		if err := r.Run(":9999"); err != nil {
+			panic(err)
+		}
+	})
+
+	// 捕获退出信号
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	// 等待信号
+	<-sigChan
+	fmt.Println("Received signal, shutting down...")
+	// 清理资源
+	config.RoutinePool.ReleaseTimeout(5 * time.Second)
+	config.RedisClient.Close()
 }

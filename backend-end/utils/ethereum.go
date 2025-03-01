@@ -2,11 +2,15 @@ package utils
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/haitao-sun03/go/config"
 	log "github.com/sirupsen/logrus"
@@ -64,4 +68,38 @@ func GetTransactOpts(gasLimit uint64) (*bind.TransactOpts, error) {
 	auth.NoSend = false // 允许直接发送交易
 
 	return auth, nil
+}
+
+func GenerateNonce() (string, error) {
+	nonceBytes := make([]byte, 16)  // 生成 16 字节随机数
+	_, err := rand.Read(nonceBytes) // 填充随机字节
+	if err != nil {
+		return "", err
+	}
+	nonceString := base64.URLEncoding.EncodeToString(nonceBytes) // 转为字符串
+	return nonceString, nil
+}
+
+// 签名验证工具函数
+func VerifySignature(address, signatureHex, nonce string) (bool, error) {
+	// 构造预期消息
+	message := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(nonce), nonce)
+	messageHash := crypto.Keccak256Hash([]byte(message))
+
+	// 解码签名
+	signature := common.Hex2Bytes(signatureHex[2:]) // 去掉0x前缀
+	if len(signature) != 65 {
+		return false, errors.New("signature length is not 65")
+	}
+
+	// 恢复公钥
+	signature[64] -= 27 // 调整恢复标识位
+	pubKey, err := crypto.SigToPub(messageHash.Bytes(), signature)
+	if err != nil {
+		return false, err
+	}
+
+	// 验证地址匹配
+	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
+	return common.HexToAddress(address) == recoveredAddr, nil
 }

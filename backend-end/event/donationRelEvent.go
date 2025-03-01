@@ -173,6 +173,20 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 			First(&existing).Error
 
 		// db.Transaction回调方法中需要返回error，若为nil，则提交事务，否则rollback
+		if !donationRecord.CampaignID.IsInt64() {
+			return fmt.Errorf("CampaignID %s exceeds int64 range", donationRecord.CampaignID.String())
+		}
+		campaignIdInt64 := donationRecord.CampaignID.Int64()
+		// 插入 user_activity_roles
+		if err := tx.Exec(
+			"INSERT INTO user_activity_roles (address, campaign_id, role) VALUES (?, ?, ?)",
+			donationRecord.Donor.Hex(),
+			campaignIdInt64,
+			model.DonorRole,
+		).Error; err != nil {
+			return err
+		}
+
 		switch {
 		case err == gorm.ErrRecordNotFound:
 			// 该用户第一次捐赠，创建新的捐赠记录
@@ -197,6 +211,7 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 					"block_time": time.Unix(int64(donationRecord.BlockTime), 0),
 				}).Error
 		}
+
 	})
 }
 

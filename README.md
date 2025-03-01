@@ -51,7 +51,8 @@ Welcome to AquaSeed, a web3-based donation platform is a full-stack application 
    ```
 3. **Run the Backend**: Start the backend server by running:
    ```sh
-   go run main.go
+   $env:ENV="dev";go run main.go
+   $env:ENV="test";go run main.go
    ```
 
 ### Smart Contracts
@@ -67,7 +68,7 @@ Welcome to AquaSeed, a web3-based donation platform is a full-stack application 
    ```
 4. **Deploy Contracts**: Deploy the contracts to a local Ethereum network (e.g., Hardhat Network) by running:
    ```sh
-   npx hardhat run scripts/deploy.js --network localhost
+   npx hardhat deploy --network lineaSepolia
    ```
 
 ### Frontend

@@ -27,6 +27,7 @@ type Configs struct {
 	DB    DBConfig
 	Redis RedisConfig
 	Geth  GethConfig
+	Jwt   JwtConfig
 }
 
 type DBConfig struct {
@@ -67,6 +68,11 @@ type NFTConfig struct {
 	ChainID    int64
 }
 
+type JwtConfig struct {
+	SecretKey string
+	WhiteList []string
+}
+
 var Config Configs
 var RedisClient *redis.Client
 
@@ -101,7 +107,7 @@ func Init() {
 	if err != nil {
 		panic(fmt.Errorf("unable to init database, %v", err))
 	}
-	// InitRedis()
+	InitRedis()
 	//将日志配置传递给日志模块并初始化
 	logging.InitLogging(loggingConfig)
 	InitGeth()
@@ -175,7 +181,9 @@ func GetDB() *gorm.DB {
 func AutoMigrate() {
 	dbInstance.AutoMigrate(&model.DonationModel{})
 	dbInstance.AutoMigrate(&model.CampaignModel{})
-	dbInstance.AutoMigrate(&model.NFTMetaDataMedal{})
+	dbInstance.AutoMigrate(&model.NFTMetaDataModel{})
+	dbInstance.AutoMigrate(&model.UserModel{})
+	dbInstance.AutoMigrate(&model.UserActivityRoleModel{})
 }
 
 func InitRedis() {

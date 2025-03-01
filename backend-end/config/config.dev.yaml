@@ -58,3 +58,5 @@ geth:
     privateKey: "4d793e28b59cae1f0680ebeda1fc70f8019dbd19041c725c02be75f6261962d9"
     chainId: 11155111
 
+jwt:
+  secretKey: "1234567890"

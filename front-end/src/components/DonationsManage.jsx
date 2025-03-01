@@ -27,7 +27,7 @@ import {
   DialogActions,
   Chip,
 } from "@mui/material";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import { request } from '../utils/api';
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -302,7 +302,7 @@ export default function DonationsManage({
 
       console.log("Request body:", requestBody);
 
-      const response = await fetch("/api/campaign/list", {
+      const data = await request("/campaign/list", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -310,15 +310,6 @@ export default function DonationsManage({
         },
         body: JSON.stringify(requestBody),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Response not ok:", response.status, errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Raw response data:", data);
 
       if (data.code === 200) {
         const mappedCampaigns = data.data.map((campaign) => ({
@@ -403,6 +394,35 @@ export default function DonationsManage({
         ...prev,
         [campaignId]: "",
       }));
+
+
+      // 等待一段时间，让后端服务有足够时间更新权限
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // 等待3秒
+
+      const requestBody = {
+        currentAccount: signer.address,
+      };
+
+      console.log("Jwt refresh request body:", requestBody);
+
+      const data = await request("/auth/refreshJWT", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (data.code === 200) {
+        let jwt = data.data;
+        // 将 address 和 signature 发送给后端
+        console.log("update jwt_" + signer.address + " :", jwt);
+        localStorage.setItem(`jwt_${signer.address}`, jwt);
+      } else {
+        setError(data.msg || "Failed to refresh jwt");
+      }
+
     } catch (err) {
       setError(err.message);
       setTxDialogOpen(false);
@@ -568,22 +588,15 @@ export default function DonationsManage({
         requestBody,
       });
 
-      const response = await fetch("/api/donation/list", {
-        method: "POST",
+      const data = await request('/donation/list', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Response not ok:", response.status, errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+  
       console.log("Response data:", data);
 
       if (data.code === 200) {

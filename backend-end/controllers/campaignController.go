@@ -17,7 +17,7 @@ func (u CampaignController) GetList(ctx *gin.Context) {
 	pageCampaign := vo.PageCampaign{}
 
 	if err := ctx.ShouldBindJSON(&pageCampaign); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		common.Fail(ctx, http.StatusInternalServerError, err)
 		return
 	}
 

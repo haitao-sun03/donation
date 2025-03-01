@@ -14,6 +14,7 @@ import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import DonationsManageContract from "../contracts/DonationsManageContract.json"; // 确保路径正确
 import TxDialog from "./TxDialog";
+import { request } from "../utils/api";
 
 const AddCampaign = ({ contractAddress }) => {
   const [title, setTitle] = useState("");
@@ -75,9 +76,36 @@ const AddCampaign = ({ contractAddress }) => {
       setBeneficiary("0"); // 重置为默认值
       setPurpose("");
       setExpectedImpact("");
+
+      // 等待一段时间，让后端服务有足够时间更新权限
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // 等待3秒
+
+      const requestBody = {
+        currentAccount: signer.address,
+      };
+
+      console.log("Jwt refresh request body:", requestBody);
+
+      const data = await request("/auth/refreshJWT", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (data.code === 200) {
+        let jwt = data.data;
+        // 将 address 和 signature 发送给后端
+        console.log("update jwt_" + signer.address + " :", jwt);
+        localStorage.setItem(`jwt_${signer.address}`, jwt);
+      } else {
+        setError(data.msg || "Failed to refresh jwt");
+      }
     } catch (error) {
-      console.error("Error creating campaign:", error);
-      setTxStatus("Failed to create campaign.");
+      console.error("Failed to refresh jwt:", error);
+      setTxStatus("Failed to refresh jwt.");
     } finally {
       // 交易完成后关闭弹窗
       setTimeout(() => {

@@ -83,7 +83,7 @@ func parseNftDeployedEvent(vLog types.Log) (*NftDeployedRecord, error) {
 func saveNftMeta(nftDeployedRecord *NftDeployedRecord) error {
 	db := config.GetDB().WithContext(context.Background())
 	for _, nftMetadata := range nftDeployedRecord.LevelMetaDataURI {
-		err := db.Create(&model.NFTMetaDataMedal{
+		err := db.Create(&model.NFTMetaDataModel{
 			Level: nftMetadata.Level,
 			URI:   nftMetadata.Uri,
 		}).Error

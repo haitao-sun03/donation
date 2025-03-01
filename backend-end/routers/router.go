@@ -5,30 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/haitao-sun03/go/controllers"
-	log "github.com/sirupsen/logrus"
 )
-
-// 定义中间
-func MiddleWare() gin.HandlerFunc {
-
-	return func(c *gin.Context) {
-		defer func() {
-			if err := recover(); err != nil {
-				if errs, ok := err.(error); ok {
-					log.WithError(errs).Error("global error occurred")
-				} else {
-					log.WithField("panic", errs).Error("global error occurred")
-				}
-
-			}
-		}()
-		c.Next()
-	}
-}
 
 func Router() *gin.Engine {
 	r := gin.Default()
-	// r.Use(MiddleWare())
+	UseMiddleWare(r)
 	initPprofFun(r)
 
 	campaign := r.Group("/campaign")
@@ -39,8 +20,13 @@ func Router() *gin.Engine {
 
 	nft := r.Group("/nft")
 	nft.POST("/nftGroupByUser", controllers.NftController{}.GetNfts)
-	return r
 
+	auth := r.Group("/auth")
+	auth.POST("/nonce", controllers.AuthController{}.GetNonce)
+	auth.POST("/login", controllers.AuthController{}.Login)
+	auth.POST("/refreshJWT", controllers.AuthController{}.RefreshJWT)
+
+	return r
 }
 
 func initPprofFun(r *gin.Engine) {

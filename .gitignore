@@ -1,5 +1,4 @@
 front-end/node_modules/
-front-end/.env.enc
 
 donations_manage/node_modules/
 donations_manage/bin/
@@ -14,6 +13,7 @@ donations_manage/coverage
 donations_manage/coverage.json
 # Hardhat Ignition default folder for deployments against a local node
 donations_manage/ignition/deployments/chain-31337
+donations_manage/.env.enc
 
 backend-end/logs/
 

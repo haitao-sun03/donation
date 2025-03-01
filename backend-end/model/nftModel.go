@@ -2,12 +2,12 @@ package model
 
 import "gorm.io/gorm"
 
-type NFTMetaDataMedal struct {
+type NFTMetaDataModel struct {
 	gorm.Model
 	Level string `gorm:"type:varchar(255);not null"`
 	URI   string `gorm:"type:varchar(255);not null"`
 }
 
-func (NFTMetaDataMedal) TableName() string {
+func (NFTMetaDataModel) TableName() string {
 	return "nft_meta_data"
 }

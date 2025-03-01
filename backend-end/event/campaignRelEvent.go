@@ -56,10 +56,10 @@ func (h *CampaignHandler) Parse(vLog types.Log) (interface{}, error) {
 	}
 }
 
-func (h *CampaignHandler) Handle(data interface{}) error {
+func (h *CampaignHandler) Handle(data any) error {
 	switch event := data.(type) {
 	case *StartCampaignRecord:
-		return saveCampaignRecord(event)
+		return saveCampaignRecordAndUpdateAuth(event)
 	case *CampaignStatusRecord:
 		return updateCampaignStatus(event)
 	case *CampaignIsWithdrawRecord:
@@ -118,25 +118,41 @@ func parseStartCampaignEvent(vLog types.Log) (*StartCampaignRecord, error) {
 	}, nil
 }
 
-func saveCampaignRecord(StartCampaignRecord *StartCampaignRecord) error {
+func saveCampaignRecordAndUpdateAuth(StartCampaignRecord *StartCampaignRecord) error {
 	// 获取带上下文和超时的DB实例
 	db := config.GetDB().WithContext(context.Background())
-	if err := db.Create(&model.CampaignModel{
-		CampaignID:     StartCampaignRecord.CampaignID.String(),
-		Title:          StartCampaignRecord.Title,
-		Goal:           StartCampaignRecord.Goal.String(),                   // *big.Int to string
-		StartTime:      time.Unix(StartCampaignRecord.StartTime.Int64(), 0), // *big.Int to time.Time
-		EndTime:        time.Unix(StartCampaignRecord.EndTime.Int64(), 0),   // *big.Int to time.Time
-		Status:         StartCampaignRecord.Status,
-		Starter:        StartCampaignRecord.Starter.Hex(), // common.Address to string
-		Nature:         StartCampaignRecord.Nature,
-		Beneficiary:    StartCampaignRecord.Beneficiary,
-		Purpose:        StartCampaignRecord.Purpose,
-		ExpectedImpact: StartCampaignRecord.ExpectedImpact,
-	}).Error; err != nil {
-		return err
-	}
-	return nil
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&model.CampaignModel{
+			CampaignID:     StartCampaignRecord.CampaignID.String(),
+			Title:          StartCampaignRecord.Title,
+			Goal:           StartCampaignRecord.Goal.String(),                   // *big.Int to string
+			StartTime:      time.Unix(StartCampaignRecord.StartTime.Int64(), 0), // *big.Int to time.Time
+			EndTime:        time.Unix(StartCampaignRecord.EndTime.Int64(), 0),   // *big.Int to time.Time
+			Status:         StartCampaignRecord.Status,
+			Starter:        StartCampaignRecord.Starter.Hex(), // common.Address to string
+			Nature:         StartCampaignRecord.Nature,
+			Beneficiary:    StartCampaignRecord.Beneficiary,
+			Purpose:        StartCampaignRecord.Purpose,
+			ExpectedImpact: StartCampaignRecord.ExpectedImpact,
+		}).Error; err != nil {
+			return err
+		}
+
+		if !StartCampaignRecord.CampaignID.IsInt64() {
+			return fmt.Errorf("CampaignID %s exceeds int64 range", StartCampaignRecord.CampaignID.String())
+		}
+		campaignIdInt64 := StartCampaignRecord.CampaignID.Int64()
+
+		if res := tx.Exec("INSERT INTO user_activity_roles (address, campaign_id, role) VALUES (?, ?, ?)",
+			StartCampaignRecord.Starter.Hex(),
+			campaignIdInt64,
+			model.StarterRole); res.Error != nil {
+			return res.Error
+		}
+
+		return nil
+	})
+
 }
 
 // CampaignStatusRecord 活动状态变更事件
