@@ -62,7 +62,7 @@ Welcome to AquaSeed, a web3-based donation platform is a full-stack application 
    ```sh
    npm install
    ```
-3. **Set env-enc password and key-value**: Set env-enc password and key-value By commands below:
+3. **Set env-enc password and key-value**: Set env-enc password and key-value(PRIVATE_KEY,SEPOLIA_RPC_URL,LINEA_SEPOLIA_RPC_URL,LINEA_API_KEY) By commands below:
    ```sh
    npx env-enc set-pwd
    npx env-enc set
