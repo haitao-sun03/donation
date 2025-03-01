@@ -47,7 +47,7 @@ Welcome to AquaSeed, a web3-based donation platform is a full-stack application 
 1. **Install Go**: Ensure you have Go installed on your system. You can download it from [golang.org](https://golang.org/dl/).
 2. **Install Dependencies**: Navigate to the `backend-end/` directory and run:
    ```sh
-   go mod download
+   go mod tidy
    ```
 3. **Run the Backend**: Start the backend server by running:
    ```sh
@@ -58,15 +58,20 @@ Welcome to AquaSeed, a web3-based donation platform is a full-stack application 
 ### Smart Contracts
 
 1. **Install Node.js and npm**: Ensure you have Node.js and npm installed on your system. You can download them from [nodejs.org](https://nodejs.org/).
-2. **Install Hardhat**: Navigate to the `donations_manage/` directory and run:
+2. **Install Dependencies**: Navigate to the `donations_manage/` directory and run:
    ```sh
-   npm install --save-dev hardhat
+   npm install
    ```
-3. **Compile Contracts**: Compile the Solidity contracts by running:
+3. **Set env-enc password and key-value**: Set env-enc password and key-value By commands below:
+   ```sh
+   npx env-enc set-pwd
+   npx env-enc set
+   ```
+4. **Compile Contracts**: Compile the Solidity contracts by running:
    ```sh
    npx hardhat compile
    ```
-4. **Deploy Contracts**: Deploy the contracts to a local Ethereum network (e.g., Hardhat Network) by running:
+5. **Deploy Contracts**: Deploy the contracts to a local Ethereum network (e.g., Hardhat Network) by running:
    ```sh
    npx hardhat deploy --network lineaSepolia
    ```
