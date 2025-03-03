@@ -7,12 +7,12 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/haitao-sun03/go/common"
-	"github.com/haitao-sun03/go/config"
-	"github.com/haitao-sun03/go/db"
-	"github.com/haitao-sun03/go/model"
-	"github.com/haitao-sun03/go/utils"
-	"github.com/haitao-sun03/go/vo"
+	"github.com/haitao-sun03/donation/backend-end/common"
+	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/donation/backend-end/db"
+	"github.com/haitao-sun03/donation/backend-end/model"
+	"github.com/haitao-sun03/donation/backend-end/utils"
+	"github.com/haitao-sun03/donation/backend-end/vo"
 )
 
 type AuthController struct{}

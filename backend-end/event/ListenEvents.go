@@ -2,8 +2,11 @@ package event
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -11,7 +14,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/haitao-sun03/go/config"
+	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/golang-distributelock/distribute"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,18 +37,83 @@ func ListenAllContractEvents(ctx context.Context, client *ethclient.Client, cont
 		log.Fatalf("Failed to subscribe to logs: %v", err)
 	}
 
+	// 工作池：限制并发处理协程数量
+	const maxWorkers = 10
+	workerChan := make(chan types.Log, maxWorkers)
+	var wg sync.WaitGroup
+
+	// 避免开启大量的goroutine
+	for range maxWorkers {
+		go func() {
+			for vLog := range workerChan {
+				handleLogWithLock(vLog)
+				wg.Done()
+			}
+		}()
+	}
+
 	for {
 		select {
 		case err := <-sub.Err():
 			log.Errorf("Subscription error: %v", err)
 		case <-ctx.Done():
 			sub.Unsubscribe()
+			close(workerChan)
+			wg.Wait()
 			log.Info("Event listener stopped")
 			return
 		case vLog := <-logs:
-			go handleLog(vLog)
+			wg.Add(1)
+			workerChan <- vLog
 		}
 	}
+}
+
+func handleLogWithLock(vLog types.Log) {
+	eventKey := fmt.Sprintf("event:%s:%d", vLog.TxHash.Hex(), vLog.Index)
+	lock := distribute.NewDistributedLock(config.RedisClient, eventKey, fmt.Sprintf("instance-%d", time.Now().UnixNano()), 10*time.Second)
+
+	acquired, err := lock.TryLock(context.Background())
+	if err != nil || !acquired {
+		log.Infof("Failed to acquire lock for event %s: %v", eventKey, err)
+		return
+	}
+
+	log.Infof("acquire lock for event %s", eventKey)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	defer lock.Unlock(ctx)
+
+	// 每5s续期一次
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				retryCount := 0
+				maxRetries := 3
+				for retryCount < maxRetries {
+					if err := lock.Renew(ctx); err != nil {
+						log.Errorf("Failed to renew lock for %s (retry %d/%d): %v", lock.Key, retryCount+1, maxRetries, err)
+						retryCount++
+						if retryCount == maxRetries {
+							log.Errorf("Max retries reached, canceling renew operation")
+							cancel()
+							return
+						}
+						time.Sleep(1 * time.Second)
+						continue
+					}
+					break
+				}
+			}
+		}
+	}()
+
+	handleLog(ctx, vLog)
 }
 
 // 事件处理接口
@@ -53,7 +122,7 @@ type EventHandler interface {
 	Handle(data interface{}) error
 }
 
-func handleLog(vLog types.Log) {
+func handleLog(ctx context.Context, vLog types.Log) {
 	handler, exists := eventHandlers[vLog.Topics[0]]
 	if !exists {
 		log.Warnf("Unhandled event signature: %s", vLog.Topics[0].Hex())

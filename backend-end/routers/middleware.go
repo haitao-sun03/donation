@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/haitao-sun03/go/config"
-	"github.com/haitao-sun03/go/utils"
+	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/donation/backend-end/utils"
 	log "github.com/sirupsen/logrus"
 )
 

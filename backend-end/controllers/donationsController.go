@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/haitao-sun03/go/common"
-	"github.com/haitao-sun03/go/db"
-	"github.com/haitao-sun03/go/vo"
+	"github.com/haitao-sun03/donation/backend-end/common"
+	"github.com/haitao-sun03/donation/backend-end/db"
+	"github.com/haitao-sun03/donation/backend-end/vo"
 )
 
 type DonationController struct{}

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/haitao-sun03/go/config"
+	"github.com/haitao-sun03/donation/backend-end/config"
 )
 
 var secretKey = []byte(config.Config.Jwt.SecretKey)

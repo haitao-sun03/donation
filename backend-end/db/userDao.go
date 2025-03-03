@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/haitao-sun03/go/config"
-	"github.com/haitao-sun03/go/model"
+	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/donation/backend-end/model"
 	"gorm.io/gorm"
 )
 

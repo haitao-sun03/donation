@@ -8,10 +8,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/haitao-sun03/go/event"
+	"github.com/haitao-sun03/donation/backend-end/event"
 
-	"github.com/haitao-sun03/go/config"
-	"github.com/haitao-sun03/go/routers"
+	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/donation/backend-end/routers"
 )
 
 func main() {

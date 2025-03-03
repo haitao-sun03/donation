@@ -9,8 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/haitao-sun03/go/config"
-	"github.com/haitao-sun03/go/model"
+	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/donation/backend-end/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

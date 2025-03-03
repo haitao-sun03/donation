@@ -13,7 +13,7 @@ export async function getCurrentUser() {
 
 export async function request(url, options = {}) {
     const currentUser = await getCurrentUser();
-    const jwt = localStorage.getItem(`jwt_${currentUser.address}`);
+    const jwt = localStorage.getItem(`jwt_${ currentUser.address.toLowerCase()}`);
     const headers = {
       ...(jwt ? { 'Authorization': `${jwt}` } : {}),
       ...options.headers,

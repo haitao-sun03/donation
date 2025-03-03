@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/haitao-sun03/go/config"
+	"github.com/haitao-sun03/donation/backend-end/config"
 )
 
 func IsContract(addressStr string) bool {

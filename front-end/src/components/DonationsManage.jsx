@@ -417,8 +417,8 @@ export default function DonationsManage({
       if (data.code === 200) {
         let jwt = data.data;
         // 将 address 和 signature 发送给后端
-        console.log("update jwt_" + signer.address + " :", jwt);
-        localStorage.setItem(`jwt_${signer.address}`, jwt);
+        console.log(`update jwt_${signer.address.toLowerCase()} :`, jwt);
+        localStorage.setItem(`jwt_${signer.address.toLowerCase()}`, jwt);
       } else {
         setError(data.msg || "Failed to refresh jwt");
       }

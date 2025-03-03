@@ -3,11 +3,11 @@ package db
 import (
 	"strconv"
 
-	"github.com/haitao-sun03/go/common"
-	"github.com/haitao-sun03/go/config"
-	"github.com/haitao-sun03/go/dto"
-	"github.com/haitao-sun03/go/model"
-	"github.com/haitao-sun03/go/vo"
+	"github.com/haitao-sun03/donation/backend-end/common"
+	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/donation/backend-end/dto"
+	"github.com/haitao-sun03/donation/backend-end/model"
+	"github.com/haitao-sun03/donation/backend-end/vo"
 	"gorm.io/gorm"
 )
 

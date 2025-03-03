@@ -87,6 +87,12 @@ github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0U
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/haitao-sun03/golang-distributelock v0.1.0 h1:OaUi4OwntqC+lPJuNOLVpi4TKNMgVx7N9ByHkTgZGU8=
 github.com/haitao-sun03/golang-distributelock v0.1.0/go.mod h1:M7wDn1QRNoc9tuzNQB5e4SjbArT0KIpxnU2YSP/xHKA=
+github.com/haitao-sun03/golang-distributelock v0.2.0 h1:4bijZrSix8pRRjdIWowbNDTpJhSpbMGcPA1UEJNWKRM=
+github.com/haitao-sun03/golang-distributelock v0.2.0/go.mod h1:M7wDn1QRNoc9tuzNQB5e4SjbArT0KIpxnU2YSP/xHKA=
+github.com/haitao-sun03/golang-distributelock v0.3.0 h1:BfZzv3Gbtd1PdbNyMHPBM4wa9uW/msbgSuhJXs+I8KA=
+github.com/haitao-sun03/golang-distributelock v0.3.0/go.mod h1:M7wDn1QRNoc9tuzNQB5e4SjbArT0KIpxnU2YSP/xHKA=
+github.com/haitao-sun03/golang-distributelock v0.4.0 h1:kqDcmaBT4VFs2R80ppKEMv3WV7dV6EGnukgispUVSRQ=
+github.com/haitao-sun03/golang-distributelock v0.4.0/go.mod h1:M7wDn1QRNoc9tuzNQB5e4SjbArT0KIpxnU2YSP/xHKA=
 github.com/haitao-sun03/logging v0.2.0 h1:zgBMhUEsYt0FZqePsbgdRsdIkAQdrfLJVJaGWS0uhQ4=
 github.com/haitao-sun03/logging v0.2.0/go.mod h1:99F3nYstgma31MNuH3qHb+/mpzrL0LzVRkJEU5n6hYo=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=

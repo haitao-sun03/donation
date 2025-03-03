@@ -12,9 +12,9 @@ import (
 	"github.com/panjf2000/ants/v2"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/haitao-sun03/go/abi"
-	"github.com/haitao-sun03/go/model"
-	"github.com/haitao-sun03/go/routinepool"
+	"github.com/haitao-sun03/donation/backend-end/abi"
+	"github.com/haitao-sun03/donation/backend-end/model"
+	"github.com/haitao-sun03/donation/backend-end/routinepool"
 	logging "github.com/haitao-sun03/logging/config"
 
 	"github.com/spf13/viper"

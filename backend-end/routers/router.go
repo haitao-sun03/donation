@@ -4,7 +4,7 @@ import (
 	"net/http/pprof"
 
 	"github.com/gin-gonic/gin"
-	"github.com/haitao-sun03/go/controllers"
+	"github.com/haitao-sun03/donation/backend-end/controllers"
 )
 
 func Router() *gin.Engine {

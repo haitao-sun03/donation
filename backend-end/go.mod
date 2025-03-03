@@ -1,11 +1,11 @@
-module github.com/haitao-sun03/go
+module github.com/haitao-sun03/donation/backend-end
 
 go 1.23.3
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/haitao-sun03/golang-distributelock v0.1.0
+	github.com/haitao-sun03/golang-distributelock v0.4.0
 	github.com/haitao-sun03/logging v0.2.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0

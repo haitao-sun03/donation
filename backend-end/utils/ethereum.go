@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/haitao-sun03/go/config"
+	"github.com/haitao-sun03/donation/backend-end/config"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
-	"github.com/haitao-sun03/go/config"
+	"github.com/haitao-sun03/donation/backend-end/config"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
