@@ -19,10 +19,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func ListenEvents() {
+func ListenEvents(ctx context.Context) {
 	DonationContractAddress := common.HexToAddress(config.Config.Geth.DonationContract.Address)
 	NftContractAddress := common.HexToAddress(config.Config.Geth.NftContract.Address)
-	ListenAllContractEvents(context.Background(), config.GethWsClient, []common.Address{DonationContractAddress, NftContractAddress})
+	ListenAllContractEvents(ctx, config.GethWsClient, []common.Address{DonationContractAddress, NftContractAddress})
 }
 
 // 监听所有合约事件
@@ -40,13 +40,14 @@ func ListenAllContractEvents(ctx context.Context, client *ethclient.Client, cont
 	// 工作池：限制并发处理协程数量
 	const maxWorkers = 10
 	workerChan := make(chan types.Log, maxWorkers)
+
 	var wg sync.WaitGroup
 
 	// 避免开启大量的goroutine
 	for range maxWorkers {
 		go func() {
 			for vLog := range workerChan {
-				handleLogWithLock(vLog)
+				handleLogWithLock(ctx, vLog)
 				wg.Done()
 			}
 		}()
@@ -58,6 +59,10 @@ func ListenAllContractEvents(ctx context.Context, client *ethclient.Client, cont
 			log.Errorf("Subscription error: %v", err)
 		case <-ctx.Done():
 			sub.Unsubscribe()
+			// 清空残留数据
+			for range logs {
+			}
+			// 此时再关闭workerChan，避免workerChan关闭后，还将vLog放入workerChan导致panic
 			close(workerChan)
 			wg.Wait()
 			log.Info("Event listener stopped")
@@ -69,20 +74,20 @@ func ListenAllContractEvents(ctx context.Context, client *ethclient.Client, cont
 	}
 }
 
-func handleLogWithLock(vLog types.Log) {
+func handleLogWithLock(ctx context.Context, vLog types.Log) {
 	eventKey := fmt.Sprintf("event:%s:%d", vLog.TxHash.Hex(), vLog.Index)
 	lock := distribute.NewDistributedLock(config.RedisClient, eventKey, fmt.Sprintf("instance-%d", time.Now().UnixNano()), 10*time.Second)
-
-	acquired, err := lock.TryLock(context.Background())
+	childCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	acquired, err := lock.TryLock(childCtx)
 	if err != nil || !acquired {
 		log.Infof("Failed to acquire lock for event %s: %v", eventKey, err)
 		return
 	}
 
 	log.Infof("acquire lock for event %s", eventKey)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	defer lock.Unlock(ctx)
+
+	defer lock.Unlock(childCtx)
 
 	// 每5s续期一次
 	go func() {
@@ -90,13 +95,13 @@ func handleLogWithLock(vLog types.Log) {
 		defer ticker.Stop()
 		for {
 			select {
-			case <-ctx.Done():
+			case <-childCtx.Done():
 				return
 			case <-ticker.C:
 				retryCount := 0
 				maxRetries := 3
 				for retryCount < maxRetries {
-					if err := lock.Renew(ctx); err != nil {
+					if err := lock.Renew(childCtx); err != nil {
 						log.Errorf("Failed to renew lock for %s (retry %d/%d): %v", lock.Key, retryCount+1, maxRetries, err)
 						retryCount++
 						if retryCount == maxRetries {

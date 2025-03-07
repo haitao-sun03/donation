@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,8 +18,9 @@ import (
 func main() {
 
 	config.Init()
+	ctx, cancel := context.WithCancel(context.Background())
 	config.RoutinePool.Submit(func() {
-		event.ListenEvents()
+		event.ListenEvents(ctx)
 	})
 
 	config.RoutinePool.Submit(func() {
@@ -40,6 +42,7 @@ func main() {
 	<-sigChan
 	fmt.Println("Received signal, shutting down...")
 	// 清理资源
+	cancel()
 	config.RoutinePool.ReleaseTimeout(5 * time.Second)
 	config.RedisClient.Close()
 }

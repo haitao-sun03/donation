@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/haitao-sun03/donation/backend-end/abi"
 	"github.com/haitao-sun03/donation/backend-end/config"
 	"github.com/haitao-sun03/donation/backend-end/model"
 	"github.com/haitao-sun03/donation/backend-end/utils"
@@ -42,7 +43,7 @@ type StartCampaignRecord struct {
 func (h *CampaignHandler) Parse(vLog types.Log) (interface{}, error) {
 	switch vLog.Topics[0] {
 	case crypto.Keccak256Hash([]byte("StartCampaign(uint256,address,string,uint256,uint256,uint256,uint8,uint8,string,string,uint8)")):
-		return parseStartCampaignEvent(vLog)
+		return config.DonationManageContract.DonationManageFilterer.ParseStartCampaign(vLog)
 	case crypto.Keccak256Hash([]byte("CancellCampaign(uint256,address,uint256)")):
 		return parseCancelCampaignEvent(vLog)
 	case crypto.Keccak256Hash([]byte("CompletedCampaign(uint256,address,uint256)")):
@@ -58,7 +59,7 @@ func (h *CampaignHandler) Parse(vLog types.Log) (interface{}, error) {
 
 func (h *CampaignHandler) Handle(data any) error {
 	switch event := data.(type) {
-	case *StartCampaignRecord:
+	case *abi.DonationManageStartCampaign:
 		return saveCampaignRecordAndUpdateAuth(event)
 	case *CampaignStatusRecord:
 		return updateCampaignStatus(event)
@@ -70,81 +71,33 @@ func (h *CampaignHandler) Handle(data any) error {
 	}
 }
 
-func parseStartCampaignEvent(vLog types.Log) (*StartCampaignRecord, error) {
-	contractAbi := getContractABI(CampaignRelContract)
-
-	var event struct {
-		Id             *big.Int
-		Starter        common.Address
-		Title          string
-		Goal           *big.Int
-		StartTime      *big.Int
-		EndTime        *big.Int
-		Nature         uint8
-		Beneficiary    uint8
-		Purpose        string
-		ExpectedImpact string
-		Status         uint8
-	}
-
-	if err := contractAbi.UnpackIntoInterface(&event, StartCampaignEvent, vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack StartCampaign event: %v", err)
-	}
-
-	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
-
-	header, err := getBlockHeader(vLog.BlockHash)
-	if err != nil {
-		return nil, err
-	}
-
-	return &StartCampaignRecord{
-		CampaignID:     campaignId,
-		Starter:        event.Starter,
-		Title:          event.Title,
-		Goal:           event.Goal,
-		StartTime:      event.StartTime,
-		EndTime:        event.EndTime,
-		Nature:         event.Nature,
-		Beneficiary:    event.Beneficiary,
-		Purpose:        event.Purpose,
-		ExpectedImpact: event.ExpectedImpact,
-		Status:         event.Status,
-		BaseEvent: BaseEvent{
-			EventType: StartCampaignEvent,
-			BlockTime: header.Time,
-			TxHash:    vLog.TxHash,
-		},
-	}, nil
-}
-
-func saveCampaignRecordAndUpdateAuth(StartCampaignRecord *StartCampaignRecord) error {
+func saveCampaignRecordAndUpdateAuth(donationManageStartCampaign *abi.DonationManageStartCampaign) error {
 	// 获取带上下文和超时的DB实例
 	db := config.GetDB().WithContext(context.Background())
 	return db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&model.CampaignModel{
-			CampaignID:     StartCampaignRecord.CampaignID.String(),
-			Title:          StartCampaignRecord.Title,
-			Goal:           StartCampaignRecord.Goal.String(),                   // *big.Int to string
-			StartTime:      time.Unix(StartCampaignRecord.StartTime.Int64(), 0), // *big.Int to time.Time
-			EndTime:        time.Unix(StartCampaignRecord.EndTime.Int64(), 0),   // *big.Int to time.Time
-			Status:         StartCampaignRecord.Status,
-			Starter:        StartCampaignRecord.Starter.Hex(), // common.Address to string
-			Nature:         StartCampaignRecord.Nature,
-			Beneficiary:    StartCampaignRecord.Beneficiary,
-			Purpose:        StartCampaignRecord.Purpose,
-			ExpectedImpact: StartCampaignRecord.ExpectedImpact,
+			CampaignID:     donationManageStartCampaign.Id.String(),
+			Title:          donationManageStartCampaign.Title,
+			Goal:           donationManageStartCampaign.Goal.String(),                   // *big.Int to string
+			StartTime:      time.Unix(donationManageStartCampaign.StartTime.Int64(), 0), // *big.Int to time.Time
+			EndTime:        time.Unix(donationManageStartCampaign.EndTime.Int64(), 0),   // *big.Int to time.Time
+			Status:         donationManageStartCampaign.Status,
+			Starter:        donationManageStartCampaign.Starter.Hex(), // common.Address to string
+			Nature:         donationManageStartCampaign.Nature,
+			Beneficiary:    donationManageStartCampaign.Beneficiary,
+			Purpose:        donationManageStartCampaign.Purpose,
+			ExpectedImpact: donationManageStartCampaign.ExpectedImpact,
 		}).Error; err != nil {
 			return err
 		}
 
-		if !StartCampaignRecord.CampaignID.IsInt64() {
-			return fmt.Errorf("CampaignID %s exceeds int64 range", StartCampaignRecord.CampaignID.String())
+		if !donationManageStartCampaign.Id.IsInt64() {
+			return fmt.Errorf("CampaignID %s exceeds int64 range", donationManageStartCampaign.Id.String())
 		}
-		campaignIdInt64 := StartCampaignRecord.CampaignID.Int64()
+		campaignIdInt64 := donationManageStartCampaign.Id.Int64()
 
 		if res := tx.Exec("INSERT INTO user_activity_roles (address, campaign_id, role) VALUES (?, ?, ?)",
-			StartCampaignRecord.Starter.Hex(),
+			donationManageStartCampaign.Starter.Hex(),
 			campaignIdInt64,
 			model.StarterRole); res.Error != nil {
 			return res.Error

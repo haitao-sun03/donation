@@ -90,8 +90,8 @@ function App() {
     } else {
       setError(dataJwt.msg || "Failed to Get jwt : " + dataJwt.msg);
     }
-    console.log(`jwt_${currentAccount.toLowecase()} :`, jwt);
-    localStorage.setItem(`jwt_${currentAccount.toLowecase()}`, jwt);
+    console.log(`jwt_${currentAccount} :`, jwt);
+    localStorage.setItem(`jwt_${currentAccount}`, jwt);
   };
 
   // 定义回调函数，用于接收余额数据
