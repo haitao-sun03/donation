@@ -10,6 +10,7 @@ import {
   Chip,
 } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
+import { request } from "../utils/api";
 
 const NftDisplay = ({ currentAddress }) => {
   const [nfts, setNfts] = useState([]);
@@ -32,19 +33,17 @@ const NftDisplay = ({ currentAddress }) => {
     const fetchNfts = async () => {
       setLoading(true);
       try {
-        const response = await fetch("/api/nft/nftGroupByUser", {
+        const requestBody = { user: currentAddress };
+
+        const data = await request("/nft/nftGroupByUser", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
-          body: JSON.stringify({ user: currentAddress }),
+          body: JSON.stringify(requestBody),
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch NFTs");
-        }
-
-        const data = await response.json();
         if (data.code === 200) {
           if (data.data === null) {
             setNfts([]);
@@ -173,21 +172,29 @@ const NftDisplay = ({ currentAddress }) => {
                             }}
                           />
                           <Box sx={{ mt: 1 }}>
-                            <Typography variant="body2" sx={{ color: "#f8fafc", mb: 1 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: "#f8fafc", mb: 1 }}
+                            >
                               Attributes:
                             </Typography>
-                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                              {nftMetadata[nftGroup.NftLevel].attributes.map((attr, attrIndex) => (
-                                <Chip
-                                  key={attrIndex}
-                                  label={`${attr.trait_type}: ${attr.value}`}
-                                  sx={{
-                                    backgroundColor: "rgba(156, 163, 175, 0.2)",
-                                    color: "#94a3b8",
-                                    borderRadius: "8px",
-                                  }}
-                                />
-                              ))}
+                            <Box
+                              sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}
+                            >
+                              {nftMetadata[nftGroup.NftLevel].attributes.map(
+                                (attr, attrIndex) => (
+                                  <Chip
+                                    key={attrIndex}
+                                    label={`${attr.trait_type}: ${attr.value}`}
+                                    sx={{
+                                      backgroundColor:
+                                        "rgba(156, 163, 175, 0.2)",
+                                      color: "#94a3b8",
+                                      borderRadius: "8px",
+                                    }}
+                                  />
+                                )
+                              )}
                             </Box>
                           </Box>
                         </Box>

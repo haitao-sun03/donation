@@ -38,7 +38,8 @@ function App() {
     const requestBody = {
       currentAccount: currentAccount,
     };
-    const response = await fetch("/api/auth/nonce", {
+
+    const dataLogin = await request("/auth/nonce", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -47,20 +48,12 @@ function App() {
       body: JSON.stringify(requestBody),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Response not ok:", response.status, errorText);
-      throw new Error(`Get nonce error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Raw response data:", data);
-
-    if (data.code === 200) {
-      nonce = data.data;
+    if (dataLogin.code === 200) {
+      nonce = dataLogin.data;
     } else {
-      setError(data.msg || "Failed to Get nonce : " + data.msg);
+      setError(dataLogin.msg || "Failed to Get nonce :" + dataLogin.msg);
     }
+
     let signature;
     try {
       signature = await window.ethereum.request({

@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
+	"github.com/haitao-sun03/donation/backend-end/model"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1677,3 +1678,17 @@ func (_DonationManage *DonationManageFilterer) ParseWithdraw(log types.Log) (*Do
 	event.Raw = log
 	return event, nil
 }
+
+type CampaignEvent interface {
+    GetCampaignID() *big.Int
+    GetStatus() uint8
+}
+
+func (e *DonationManageActiveCampaign) GetCampaignID() *big.Int { return e.Id }
+func (e *DonationManageActiveCampaign) GetStatus() uint8        { return model.CampaignStatusActive }
+
+func (e *DonationManageCancellCampaign) GetCampaignID() *big.Int { return e.Id }
+func (e *DonationManageCancellCampaign) GetStatus() uint8        { return model.CampaignStatusCancelled }
+
+func (e *DonationManageCompletedCampaign) GetCampaignID() *big.Int { return e.Id }
+func (e *DonationManageCompletedCampaign) GetStatus() uint8        { return model.CampaignStatusCompleted }

@@ -41,17 +41,20 @@ type StartCampaignRecord struct {
 }
 
 func (h *CampaignHandler) Parse(vLog types.Log) (interface{}, error) {
+	donationManage := config.DonationManageContract.DonationManageFilterer
 	switch vLog.Topics[0] {
+
 	case crypto.Keccak256Hash([]byte("StartCampaign(uint256,address,string,uint256,uint256,uint256,uint8,uint8,string,string,uint8)")):
-		return config.DonationManageContract.DonationManageFilterer.ParseStartCampaign(vLog)
-	case crypto.Keccak256Hash([]byte("CancellCampaign(uint256,address,uint256)")):
-		return parseCancelCampaignEvent(vLog)
-	case crypto.Keccak256Hash([]byte("CompletedCampaign(uint256,address,uint256)")):
-		return parseCompleteCampaignEvent(vLog)
-	case crypto.Keccak256Hash([]byte("Withdraw(uint256,address,uint256,uint256)")):
-		return parseWithdrawEvent(vLog)
+		return donationManage.ParseStartCampaign(vLog)
 	case crypto.Keccak256Hash([]byte("ActiveCampaign(uint256,address,uint256)")):
-		return parseActiveCampaignEvent(vLog)
+		return donationManage.ParseActiveCampaign(vLog)
+	case crypto.Keccak256Hash([]byte("CompletedCampaign(uint256,address,uint256)")):
+		return donationManage.ParseCompletedCampaign(vLog)
+	case crypto.Keccak256Hash([]byte("CancellCampaign(uint256,address,uint256)")):
+		return donationManage.ParseCancellCampaign(vLog)
+	case crypto.Keccak256Hash([]byte("Withdraw(uint256,address,uint256,uint256)")):
+		return donationManage.ParseWithdraw(vLog)
+
 	default:
 		return nil, fmt.Errorf("unsupported campaign event")
 	}
@@ -61,9 +64,13 @@ func (h *CampaignHandler) Handle(data any) error {
 	switch event := data.(type) {
 	case *abi.DonationManageStartCampaign:
 		return saveCampaignRecordAndUpdateAuth(event)
-	case *CampaignStatusRecord:
+	case *abi.DonationManageActiveCampaign:
 		return updateCampaignStatus(event)
-	case *CampaignIsWithdrawRecord:
+	case *abi.DonationManageCompletedCampaign:
+		return updateCampaignStatus(event)
+	case *abi.DonationManageCancellCampaign:
+		return updateCampaignStatus(event)
+	case *abi.DonationManageWithdraw:
 		return updateCampaignWithdraw(event)
 
 	default:
@@ -108,16 +115,6 @@ func saveCampaignRecordAndUpdateAuth(donationManageStartCampaign *abi.DonationMa
 
 }
 
-// CampaignStatusRecord 活动状态变更事件
-type CampaignStatusRecord struct {
-	CampaignID *big.Int
-	Caller     common.Address
-	Timestamp  *big.Int
-	Status     uint8
-	IsWithdraw uint8
-	BaseEvent
-}
-
 // CampaignIsWithdrawRecord 活动取款
 type CampaignIsWithdrawRecord struct {
 	CampaignID *big.Int
@@ -127,140 +124,12 @@ type CampaignIsWithdrawRecord struct {
 	BaseEvent
 }
 
-func parseActiveCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
-	contractAbi := getContractABI(CampaignRelContract)
-
-	var event struct {
-		Id     *big.Int
-		Caller common.Address
-		Time   *big.Int
-	}
-
-	if err := contractAbi.UnpackIntoInterface(&event, ActiveCampaignEvent, vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack ActiveCampaignEvent event: %v", err)
-	}
-
-	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
-
-	header, err := getBlockHeader(vLog.BlockHash)
-	if err != nil {
-		return nil, err
-	}
-
-	return &CampaignStatusRecord{
-		CampaignID: campaignId,
-		Caller:     event.Caller,
-		Timestamp:  event.Time,
-		Status:     model.CampaignStatusActive,
-		BaseEvent: BaseEvent{
-			EventType: ActiveCampaignEvent,
-			BlockTime: header.Time,
-			TxHash:    vLog.TxHash,
-		},
-	}, nil
+type CampaignEvent interface {
+	GetCampaignID() *big.Int
+	GetStatus() uint8
 }
 
-func parseCancelCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
-	contractAbi := getContractABI(CampaignRelContract)
-
-	var event struct {
-		Id     *big.Int
-		Caller common.Address
-		Time   *big.Int
-	}
-
-	if err := contractAbi.UnpackIntoInterface(&event, CancelledCampaignEvent, vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack CancellCampaign event: %v", err)
-	}
-
-	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
-
-	header, err := getBlockHeader(vLog.BlockHash)
-	if err != nil {
-		return nil, err
-	}
-
-	return &CampaignStatusRecord{
-		CampaignID: campaignId,
-		Caller:     event.Caller,
-		Timestamp:  event.Time,
-		Status:     model.CampaignStatusCancelled,
-		BaseEvent: BaseEvent{
-			EventType: CancelledCampaignEvent,
-			BlockTime: header.Time,
-			TxHash:    vLog.TxHash,
-		},
-	}, nil
-}
-
-func parseCompleteCampaignEvent(vLog types.Log) (*CampaignStatusRecord, error) {
-	contractAbi := getContractABI(CampaignRelContract)
-
-	var event struct {
-		Id     *big.Int
-		Caller common.Address
-		Time   *big.Int
-	}
-
-	if err := contractAbi.UnpackIntoInterface(&event, CompletedCampaignEvent, vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack CompletedCampaign event: %v", err)
-	}
-
-	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
-
-	header, err := getBlockHeader(vLog.BlockHash)
-	if err != nil {
-		return nil, err
-	}
-
-	return &CampaignStatusRecord{
-		CampaignID: campaignId,
-		Caller:     event.Caller,
-		Timestamp:  event.Time,
-		Status:     model.CampaignStatusCompleted,
-		BaseEvent: BaseEvent{
-			EventType: CompletedCampaignEvent,
-			BlockTime: header.Time,
-			TxHash:    vLog.TxHash,
-		},
-	}, nil
-}
-
-func parseWithdrawEvent(vLog types.Log) (*CampaignIsWithdrawRecord, error) {
-	contractAbi := getContractABI(CampaignRelContract)
-
-	var event struct {
-		Id             *big.Int
-		Withdrawer     common.Address
-		Time           *big.Int
-		WithdrawAmount *big.Int
-	}
-
-	if err := contractAbi.UnpackIntoInterface(&event, WithdrawEvent, vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack Withdraw event: %v", err)
-	}
-
-	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
-
-	header, err := getBlockHeader(vLog.BlockHash)
-	if err != nil {
-		return nil, err
-	}
-
-	return &CampaignIsWithdrawRecord{
-		CampaignID: campaignId,
-		Caller:     event.Withdrawer,
-		Timestamp:  event.Time,
-		IsWithdraw: model.Withdraw,
-		BaseEvent: BaseEvent{
-			EventType: WithdrawEvent,
-			BlockTime: header.Time,
-			TxHash:    vLog.TxHash,
-		},
-	}, nil
-}
-
-func updateCampaignStatus(record *CampaignStatusRecord) error {
+func updateCampaignStatus(record CampaignEvent) error {
 	// 实现活动状态更新逻辑
 	db := config.GetDB().WithContext(context.Background())
 	return db.Transaction(func(tx *gorm.DB) error {
@@ -269,7 +138,7 @@ func updateCampaignStatus(record *CampaignStatusRecord) error {
 		// 查询现有记录（带行锁）
 		err := tx.
 			Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("campaign_id = ?", record.CampaignID.String()).
+			Where("campaign_id = ?", record.GetCampaignID().String()).
 			First(&existing).Error
 
 		// db.Transaction回调方法中需要返回error，若为nil，则提交事务，否则rollback
@@ -281,13 +150,13 @@ func updateCampaignStatus(record *CampaignStatusRecord) error {
 			// 更新记录
 			if err = tx.Model(&existing).
 				Updates(map[string]interface{}{
-					"status": record.Status,
+					"status": record.GetStatus(),
 				}).Error; err != nil {
 				return err
 			}
 		}
 		// 如果活动状态为已完成，则检查是否需要铸造NFT
-		if record.Status == model.CampaignStatusCompleted {
+		if record.GetStatus() == model.CampaignStatusCompleted {
 			err = checkMintNFTOfTheCampaign(tx, record, existing)
 			if err != nil {
 				return err
@@ -297,10 +166,10 @@ func updateCampaignStatus(record *CampaignStatusRecord) error {
 	})
 }
 
-func checkMintNFTOfTheCampaign(tx *gorm.DB, record *CampaignStatusRecord, campaign model.CampaignModel) error {
+func checkMintNFTOfTheCampaign(tx *gorm.DB, record CampaignEvent, campaign model.CampaignModel) error {
 	// 查询该活动的所有donations
 	var donations []model.DonationModel
-	if err := tx.Where("campaign_id = ?", record.CampaignID.String()).Find(&donations).Error; err != nil {
+	if err := tx.Where("campaign_id = ?", record.GetCampaignID().String()).Find(&donations).Error; err != nil {
 		return err
 	}
 
@@ -353,7 +222,7 @@ func checkMintNFTOfTheCampaign(tx *gorm.DB, record *CampaignStatusRecord, campai
 	return nil
 }
 
-func updateCampaignWithdraw(record *CampaignIsWithdrawRecord) error {
+func updateCampaignWithdraw(record *abi.DonationManageWithdraw) error {
 	// 实现活动状态更新逻辑
 	db := config.GetDB().WithContext(context.Background())
 	return db.Transaction(func(tx *gorm.DB) error {
@@ -362,7 +231,7 @@ func updateCampaignWithdraw(record *CampaignIsWithdrawRecord) error {
 		// 查询现有记录（带行锁）
 		err := tx.
 			Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("campaign_id = ?", record.CampaignID.String()).
+			Where("campaign_id = ?", record.Id.String()).
 			First(&existing).Error
 
 		// db.Transaction回调方法中需要返回error，若为nil，则提交事务，否则rollback
@@ -375,8 +244,8 @@ func updateCampaignWithdraw(record *CampaignIsWithdrawRecord) error {
 
 			// 更新记录
 			return tx.Model(&existing).
-				Updates(map[string]interface{}{
-					"is_withdraw": record.IsWithdraw,
+				Updates(map[string]any{
+					"is_withdraw": model.Withdraw,
 				}).Error
 		}
 	})
