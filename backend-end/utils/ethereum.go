@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -17,7 +18,7 @@ import (
 )
 
 // GetTransactOpts 返回配置好的TransactOpts，gasLimit为0时使用默认值
-func GetTransactOpts(gasLimit uint64) (*bind.TransactOpts, error) {
+func GetTransactOpts(gasLimit uint64, to common.Address, value *big.Int, data []byte) (*bind.TransactOpts, error) {
 	privateKeyStr := config.Config.Geth.Nft.PrivateKey
 	log.Debugf("Private key length: %d", len(privateKeyStr))
 	privateKey, err := crypto.HexToECDSA(strings.TrimSpace(privateKeyStr))
@@ -31,11 +32,25 @@ func GetTransactOpts(gasLimit uint64) (*bind.TransactOpts, error) {
 		return nil, err
 	}
 
-	// 设置 gas limit，如果传入0则使用默认值
-	if gasLimit == 0 {
-		gasLimit = 300000
+	callMsg := ethereum.CallMsg{
+		From:  auth.From,
+		To:    &to,
+		Value: value,
+		Data:  data,
 	}
-	auth.GasLimit = gasLimit
+	estimatedGas, err := config.GethClient.EstimateGas(context.Background(), callMsg)
+	if err != nil {
+		log.Warnf("EstimateGas failed: %v, using default gasLimit: 300000", err)
+		estimatedGas = 300000 // 兜底默认值
+	}
+
+	// 添加 20% 余量
+	gasLimitWithMargin := uint64(float64(estimatedGas) * 1.2)
+	if gasLimit > 0 {
+		auth.GasLimit = gasLimit // 优先使用传入值
+	} else {
+		auth.GasLimit = gasLimitWithMargin
+	}
 
 	// 获取当前区块
 	header, err := config.GethClient.HeaderByNumber(context.Background(), nil)

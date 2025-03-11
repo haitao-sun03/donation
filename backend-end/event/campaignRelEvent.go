@@ -191,8 +191,19 @@ func checkMintNFTOfTheCampaign(tx *gorm.DB, record CampaignEvent, campaign model
 			if percentage.Cmp(big.NewFloat(float64(threshold.percent))) >= 0 {
 				// 达到或超过阈值，铸造NFT
 				log.Infof("Minting NFT for %s at %d,donor :%s", threshold.level, threshold.percent, donation.Donor)
-
-				auth, err := utils.GetTransactOpts(2000000)
+				// ABI 编码
+				NftABI := getContractABI(NftContract)
+				if _, ok := NftABI.Methods["safeMint"]; !ok {
+					log.Error("safeMint method not found in ABI")
+					return fmt.Errorf("invalid ABI: safeMint not defined")
+				}
+				callData, err := NftABI.Pack("safeMint", common.HexToAddress(donation.Donor), threshold.level)
+				if err != nil {
+					log.WithError(err).Error("Failed to pack ABI data")
+					return err
+				}
+				log.Debugf("Packed callData: %x", callData)
+				auth, err := utils.GetTransactOpts(0, common.HexToAddress(config.Config.Geth.NftContract.Address), big.NewInt(0), callData)
 				if err != nil {
 					log.WithError(err).Error("Failed to get transact opts")
 					return err
@@ -202,10 +213,12 @@ func checkMintNFTOfTheCampaign(tx *gorm.DB, record CampaignEvent, campaign model
 					log.WithError(err).Error("Failed to mint NFT")
 					return err
 				}
-				if _, err = bind.WaitMined(context.Background(), config.GethClient, tran); err != nil {
+				receipt, err := bind.WaitMined(context.Background(), config.GethClient, tran)
+				if err != nil {
 					log.WithError(err).Error("Failed to wait for NFT minting transaction to be mined")
 					return err
 				}
+				log.Infof("Gas Used: %d", receipt.GasUsed)
 
 				// 更新表
 				err = tx.Model(&donation).
