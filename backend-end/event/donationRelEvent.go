@@ -17,7 +17,6 @@ import (
 
 // DonationHandler 处理捐赠相关事件
 type DonationHandler struct {
-	EventHandler
 }
 
 // 捐赠事件结构体

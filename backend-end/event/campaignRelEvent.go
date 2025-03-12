@@ -21,7 +21,6 @@ import (
 
 // CampaignHandler 处理捐赠相关事件
 type CampaignHandler struct {
-	EventHandler
 }
 
 // StartCampaignRecord 活动创建事件

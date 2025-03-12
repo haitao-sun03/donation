@@ -12,7 +12,6 @@ import (
 
 // NftHandler 处理Nft相关
 type NFTHandler struct {
-	EventHandler
 }
 
 // NftDeployedRecord 处理Nft部署事件
