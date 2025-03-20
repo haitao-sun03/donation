@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -157,17 +159,33 @@ const (
 	NftDeployedEvent       = "NFTDeployed"
 )
 
+var (
+	eventHandlers map[common.Hash]EventHandler
+	once          sync.Once
+)
+
 // 事件处理器注册表
-var eventHandlers = map[common.Hash]EventHandler{
-	crypto.Keccak256Hash([]byte("Donate(uint256,address,uint256)")):                                                               &DonationHandler{},
-	crypto.Keccak256Hash([]byte("StartCampaign(uint256,address,string,uint256,uint256,uint256,uint8,uint8,string,string,uint8)")): &CampaignHandler{},
-	crypto.Keccak256Hash([]byte("CancellCampaign(uint256,address,uint256)")):                                                      &CampaignHandler{},
-	crypto.Keccak256Hash([]byte("CompletedCampaign(uint256,address,uint256)")):                                                    &CampaignHandler{},
-	crypto.Keccak256Hash([]byte("Withdraw(uint256,address,uint256,uint256)")):                                                     &CampaignHandler{},
-	crypto.Keccak256Hash([]byte("Refund(uint256,address,uint256,uint256)")):                                                       &DonationHandler{},
-	crypto.Keccak256Hash([]byte("NFTDeployed(tuple[])")):                                                                          &NFTHandler{},
-	crypto.Keccak256Hash([]byte("NFTDeployed((string,string)[])")):                                                                &NFTHandler{},
-	crypto.Keccak256Hash([]byte("ActiveCampaign(uint256,address,uint256)")):                                                       &CampaignHandler{},
+func initHandlers() map[common.Hash]EventHandler {
+	return map[common.Hash]EventHandler{
+		crypto.Keccak256Hash([]byte("Donate(uint256,address,uint256)")):                                                               NewDonationHandler(nil),
+		crypto.Keccak256Hash([]byte("StartCampaign(uint256,address,string,uint256,uint256,uint256,uint8,uint8,string,string,uint8)")): &CampaignHandler{},
+		crypto.Keccak256Hash([]byte("CancellCampaign(uint256,address,uint256)")):                                                      &CampaignHandler{},
+		crypto.Keccak256Hash([]byte("CompletedCampaign(uint256,address,uint256)")):                                                    &CampaignHandler{},
+		crypto.Keccak256Hash([]byte("Withdraw(uint256,address,uint256,uint256)")):                                                     &CampaignHandler{},
+		crypto.Keccak256Hash([]byte("Refund(uint256,address,uint256,uint256)")):                                                       NewDonationHandler(nil),
+		crypto.Keccak256Hash([]byte("NFTDeployed(tuple[])")):                                                                          &NFTHandler{},
+		crypto.Keccak256Hash([]byte("NFTDeployed((string,string)[])")):                                                                &NFTHandler{},
+		crypto.Keccak256Hash([]byte("ActiveCampaign(uint256,address,uint256)")):                                                       &CampaignHandler{},
+	}
+}
+
+// GetEventHandlers 返回事件处理器注册表（单例）
+func GetEventHandlers() map[common.Hash]EventHandler {
+	once.Do(func() {
+		config.Init(false) // 确保数据库初始化
+		eventHandlers = initHandlers()
+	})
+	return eventHandlers
 }
 
 // 基础事件结构
@@ -184,6 +202,8 @@ const (
 
 // 获取合约完整ABI
 func getContractABI(contract string) abi.ABI {
+	_, filename, _, _ := runtime.Caller(0)
+	projectRoot := filepath.Dir(filepath.Dir(filename))
 	var abiPath string
 	if contract == "CampaignRelContract" {
 		abiPath = config.Config.Geth.DonationContract.AbiPath // 从配置文件中读取路径
@@ -191,7 +211,7 @@ func getContractABI(contract string) abi.ABI {
 		abiPath = config.Config.Geth.NftContract.AbiPath
 	}
 
-	abiBytes, err := ioutil.ReadFile(abiPath)
+	abiBytes, err := ioutil.ReadFile(filepath.Join(projectRoot, abiPath))
 	if err != nil {
 		log.Fatalf("Failed to read ABI file: %v", err)
 	}

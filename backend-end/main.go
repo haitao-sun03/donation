@@ -16,8 +16,7 @@ import (
 )
 
 func main() {
-
-	config.Init()
+	event.GetEventHandlers()
 	ctx, cancel := context.WithCancel(context.Background())
 	config.RoutinePool.Submit(func() {
 		event.ListenEvents(ctx)

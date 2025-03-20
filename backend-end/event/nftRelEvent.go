@@ -32,8 +32,6 @@ func (nft *NFTHandler) Parse(vLog types.Log) (interface{}, error) {
 		return parseNftDeployedEvent(vLog)
 	case crypto.Keccak256Hash([]byte("NFTDeployed((string,string)[])")):
 		return parseNftDeployedEvent(vLog)
-	case crypto.Keccak256Hash([]byte("Refund(uint256,address,uint256,uint256)")):
-		return parseRefundEvent(vLog)
 	default:
 		return nil, fmt.Errorf("unsupported event type")
 	}
@@ -44,8 +42,6 @@ func (nft *NFTHandler) Handle(data interface{}) error {
 	switch event := data.(type) {
 	case *NftDeployedRecord:
 		return saveNftMeta(event)
-	case *RefundRecord:
-		return updateDonationRefund(event)
 
 	default:
 		return fmt.Errorf("invalid donation event data")

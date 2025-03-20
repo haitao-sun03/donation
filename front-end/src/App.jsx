@@ -55,6 +55,7 @@ function App() {
     }
 
     let signature;
+    console.log("======")
     try {
       signature = await window.ethereum.request({
         method: "personal_sign",
@@ -63,6 +64,7 @@ function App() {
     } catch (error) {
       console.error("Signature error:", error);
     }
+    console.log("!!!!!!")
 
     const requestBodyJwt = {
       currentAccount: currentAccount,

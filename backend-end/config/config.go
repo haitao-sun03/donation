@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 
@@ -76,14 +78,19 @@ type JwtConfig struct {
 var Config Configs
 var RedisClient *redis.Client
 
-func Init() {
+func Init(unitTestSkip bool) {
 	// 设置viper读取配置文件
 	// viper.SetConfigName("config")  // 配置文件的名称（不需要后缀）
-	viper.SetConfigType("yaml")    // 配置文件的类型
-	viper.AddConfigPath("config/") // 配置文件所在的路径
-
+	_, filename, _, _ := runtime.Caller(0)
+	projectRoot := filepath.Dir(filepath.Dir(filename))
+	configPath := filepath.Join(projectRoot, "config")
+	viper.AddConfigPath(configPath) // 配置文件所在的路径
+	viper.SetConfigType("yaml")     // 配置文件的类型
 	viper.AutomaticEnv()
 	env := viper.GetString("ENV")
+	if env == "" {
+		env = "test"
+	}
 	viper.SetConfigName("config." + env)
 	fmt.Println("load config file : " + "config." + env)
 
@@ -103,16 +110,19 @@ func Init() {
 		panic(fmt.Errorf("unable to decode into struct, %v", err))
 	}
 
-	err = InitDatabase()
-	if err != nil {
-		panic(fmt.Errorf("unable to init database, %v", err))
+	if !unitTestSkip {
+		err = InitDatabase()
+		if err != nil {
+			panic(fmt.Errorf("unable to init database, %v", err))
+		}
+		InitRedis()
+		//将日志配置传递给日志模块并初始化
+		logging.InitLogging(loggingConfig)
+		InitRoutinePool(1000)
+		InitGeth()
 	}
-	InitRedis()
-	//将日志配置传递给日志模块并初始化
-	logging.InitLogging(loggingConfig)
-	InitGeth()
 	InitContract()
-	InitRoutinePool(1000)
+
 }
 
 var (
@@ -249,4 +259,9 @@ func InitRoutinePool(cap int) {
 
 func TunePoolCap(cap int) {
 	RoutinePool.Tune(cap)
+}
+
+// 测试使用
+func SetDB(db *gorm.DB) {
+	dbInstance = db
 }

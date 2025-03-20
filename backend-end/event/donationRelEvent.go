@@ -2,14 +2,16 @@ package event
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/haitao-sun03/donation/backend-end/abi"
 	"github.com/haitao-sun03/donation/backend-end/config"
+	"github.com/haitao-sun03/donation/backend-end/db"
 	"github.com/haitao-sun03/donation/backend-end/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -17,6 +19,15 @@ import (
 
 // DonationHandler 处理捐赠相关事件
 type DonationHandler struct {
+	DB db.DBInterface // 可选注入，默认为 config.GetDB()
+}
+
+// NewDonationHandler 创建 DonationHandler 实例，带默认 DB
+func NewDonationHandler(_db db.DBInterface) *DonationHandler {
+	if _db == nil {
+		_db = &db.GormDB{InnerDB: config.GetDB()}
+	}
+	return &DonationHandler{DB: _db}
 }
 
 // 捐赠事件结构体
@@ -38,11 +49,12 @@ type RefundRecord struct {
 }
 
 func (h *DonationHandler) Parse(vLog types.Log) (interface{}, error) {
+	donationManage := config.DonationManageContract.DonationManageFilterer
 	switch vLog.Topics[0] {
 	case crypto.Keccak256Hash([]byte("Donate(uint256,address,uint256)")):
-		return parseDonateEvent(vLog)
+		return donationManage.ParseDonate(vLog)
 	case crypto.Keccak256Hash([]byte("Refund(uint256,address,uint256,uint256)")):
-		return parseRefundEvent(vLog)
+		return donationManage.ParseRefund(vLog)
 	default:
 		return nil, fmt.Errorf("unsupported event type")
 	}
@@ -51,9 +63,9 @@ func (h *DonationHandler) Parse(vLog types.Log) (interface{}, error) {
 func (h *DonationHandler) Handle(data interface{}) error {
 
 	switch event := data.(type) {
-	case *DonationRecord:
-		return saveDonationRecord(event)
-	case *RefundRecord:
+	case *abi.DonationManageDonate:
+		return h.saveDonationRecord(event)
+	case *abi.DonationManageRefund:
 		return updateDonationRefund(event)
 
 	default:
@@ -62,88 +74,16 @@ func (h *DonationHandler) Handle(data interface{}) error {
 
 }
 
-// parseDonateEvent 解析捐赠事件日志
-func parseDonateEvent(vLog types.Log) (*DonationRecord, error) {
-	contractAbi := getContractABI(CampaignRelContract)
-
-	// 解包日志数据
-	var event struct {
-		CampaignId *big.Int
-		Donater    common.Address
-		Amount     *big.Int
-	}
-
-	if err := contractAbi.UnpackIntoInterface(&event, DonateEvent, vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack Donate event: %v", err)
-	}
-
-	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
-
-	// 获取区块时间（需要额外查询）
-	header, err := getBlockHeader(vLog.BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get block header: %v", err)
-	}
-
-	return &DonationRecord{
-		CampaignID: campaignId,
-		Donor:      event.Donater,
-		Amount:     event.Amount,
-		BlockTime:  header.Time,
-		BaseEvent: BaseEvent{
-			EventType: DonateEvent,
-			BlockTime: header.Time,
-			TxHash:    vLog.TxHash,
-		},
-	}, nil
-}
-
-// parseRefundEvent 退款事件日志
-func parseRefundEvent(vLog types.Log) (*RefundRecord, error) {
-	contractAbi := getContractABI(CampaignRelContract)
-
-	// 解包日志数据
-	var event struct {
-		Refunder     common.Address
-		Time         *big.Int
-		RefundAmount *big.Int
-	}
-
-	if err := contractAbi.UnpackIntoInterface(&event, RefundEvent, vLog.Data); err != nil {
-		return nil, fmt.Errorf("failed to unpack Refund event: %v", err)
-	}
-
-	campaignId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
-
-	// 获取区块时间（需要额外查询）
-	header, err := getBlockHeader(vLog.BlockHash)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get block header: %v", err)
-	}
-
-	return &RefundRecord{
-		CampaignID: campaignId,
-		Caller:     event.Refunder,
-		IsRefund:   model.Refund,
-		BaseEvent: BaseEvent{
-			EventType: RefundEvent,
-			BlockTime: header.Time,
-			TxHash:    vLog.TxHash,
-		},
-	}, nil
-}
-
-func saveDonationRecord(donationRecord *DonationRecord) error {
+func (h *DonationHandler) saveDonationRecord(donationRecord *abi.DonationManageDonate) error {
 	// 获取带上下文和超时的DB实例
-	db := config.GetDB().WithContext(context.Background())
+	db := h.DB.WithContext(context.Background())
 
 	// 开启事务（确保原子性）
 	return db.Transaction(func(tx *gorm.DB) error {
 		// 1 更新活动总捐赠额
 		var campaign model.CampaignModel
 		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("campaign_id = ?", donationRecord.CampaignID.String()).
+			Where("campaign_id = ?", donationRecord.Id.String()).
 			First(&campaign).Error
 		if err != nil {
 			return err
@@ -155,6 +95,7 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 
 		// 更新活动的总捐赠额
 		err = tx.Model(&campaign).
+			Where("campaign_id = ?", campaign.CampaignID).
 			Updates(map[string]interface{}{
 				"total_donated": newTotal.String(),
 			}).Error
@@ -167,33 +108,41 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 
 		// 查询现有记录（带行锁）
 		err = tx.
-			Where("campaign_id = ?", donationRecord.CampaignID.String()).
-			Where("donor = ?", donationRecord.Donor.Hex()).
+			Where("campaign_id = ?", donationRecord.Id.String()).
+			Where("donor = ?", donationRecord.Donater.Hex()).
 			First(&existing).Error
 
 		// db.Transaction回调方法中需要返回error，若为nil，则提交事务，否则rollback
-		if !donationRecord.CampaignID.IsInt64() {
-			return fmt.Errorf("CampaignID %s exceeds int64 range", donationRecord.CampaignID.String())
+		if !donationRecord.Id.IsInt64() {
+			return fmt.Errorf("CampaignID %s exceeds int64 range", donationRecord.Id.String())
 		}
-		campaignIdInt64 := donationRecord.CampaignID.Int64()
+		campaignIdInt64 := donationRecord.Id.Int64()
 		// 插入 user_activity_roles
-		if err := tx.Exec(
-			"INSERT INTO user_activity_roles (address, campaign_id, role) VALUES (?, ?, ?)",
-			donationRecord.Donor.Hex(),
-			campaignIdInt64,
-			model.DonorRole,
-		).Error; err != nil {
-			return err
+		var userActivityRoleModel model.UserActivityRoleModel
+		result := tx.
+			Where("address = ?", donationRecord.Donater.Hex()).
+			Where("campaign_id = ?", campaignIdInt64).
+			Where("role = ?", model.DonorRole).
+			First(&userActivityRoleModel)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
+			if err := tx.Exec(
+				"INSERT INTO user_activity_roles (address, campaign_id, role) VALUES (?, ?, ?)",
+				donationRecord.Donater.Hex(),
+				campaignIdInt64,
+				model.DonorRole,
+			).Error; err != nil {
+				return err
+			}
 		}
 
 		switch {
 		case err == gorm.ErrRecordNotFound:
 			// 该用户第一次捐赠，创建新的捐赠记录
 			return tx.Create(&model.DonationModel{
-				CampaignID: donationRecord.CampaignID.String(),
-				Donor:      donationRecord.Donor.Hex(),
+				CampaignID: donationRecord.Id.String(),
+				Donor:      donationRecord.Donater.Hex(),
 				Amount:     donationRecord.Amount.String(),
-				BlockTime:  time.Unix(int64(donationRecord.BlockTime), 0),
+				// BlockTime:  time.Unix(int64(donationRecord.BlockTime), 0),
 			}).Error
 
 		case err != nil:
@@ -205,16 +154,18 @@ func saveDonationRecord(donationRecord *DonationRecord) error {
 
 			// 更新记录
 			return tx.Model(&existing).
+				Where("campaign_id = ?", existing.CampaignID).
+				Where("donor = ?", existing.Donor).
 				Updates(map[string]interface{}{
-					"amount":     newAmount.String(),
-					"block_time": time.Unix(int64(donationRecord.BlockTime), 0),
+					"amount": newAmount.String(),
+					// "block_time": time.Unix(int64(donationRecord.BlockTime), 0),
 				}).Error
 		}
 
 	})
 }
 
-func updateDonationRefund(record *RefundRecord) error {
+func updateDonationRefund(record *abi.DonationManageRefund) error {
 	// 实现活动状态更新逻辑
 	db := config.GetDB().WithContext(context.Background())
 	return db.Transaction(func(tx *gorm.DB) error {
@@ -223,8 +174,8 @@ func updateDonationRefund(record *RefundRecord) error {
 		// 查询现有记录（带行锁）
 		err := tx.
 			Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("campaign_id = ?", record.CampaignID.String()).
-			Where("donor = ?", record.Caller.Hex()).
+			Where("campaign_id = ?", record.Id.String()).
+			Where("donor = ?", record.Refunder.Hex()).
 			First(&existing).Error
 
 		// db.Transaction回调方法中需要返回error，若为nil，则提交事务，否则rollback
