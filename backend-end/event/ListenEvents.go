@@ -33,12 +33,45 @@ func ListenAllContractEvents(ctx context.Context, client *ethclient.Client, cont
 		Addresses: contractAddrs,
 	}
 
-	logs := make(chan types.Log)
-	sub, err := client.SubscribeFilterLogs(ctx, query, logs)
+	// 未确认事件队列（BlockingQueue）
+	unconfirmedQueue := make(chan types.Log, 1000)
+	confirmedQueue := make(chan types.Log, 1000)
+
+	sub, err := client.SubscribeFilterLogs(ctx, query, unconfirmedQueue)
 	if err != nil {
 		log.Fatalf("Failed to subscribe to logs: %v", err)
 	}
 
+	// 启动确认检查协程
+	go checkBlockConfirmations(ctx, client, unconfirmedQueue, confirmedQueue)
+
+	// 处理已确认事件
+	go processConfirmedLogs(ctx, sub, confirmedQueue)
+
+}
+
+const CONFIRMED_BLOCK_NUM = 12
+
+// 检查区块确认数
+func checkBlockConfirmations(ctx context.Context, client *ethclient.Client, in chan types.Log, out chan<- types.Log) {
+	// 获取当前最新区块号
+	latestBlock, _ := client.BlockNumber(ctx)
+	for vLog := range in {
+		// 等待CONFIRMED_BLOCK个区块确认
+		if latestBlock-vLog.BlockNumber >= CONFIRMED_BLOCK_NUM {
+			out <- vLog
+		} else {
+			// 未达到确认数，重新放回队列（需实现延迟重试逻辑）
+			go func(log types.Log) {
+				time.Sleep(30 * time.Second) // 30秒后重试
+				in <- log
+			}(vLog)
+		}
+	}
+}
+
+// 处理已确认事件
+func processConfirmedLogs(ctx context.Context, sub ethereum.Subscription, confirmedQueue <-chan types.Log) {
 	// 工作池：限制并发处理协程数量
 	const maxWorkers = 10
 	workerChan := make(chan types.Log, maxWorkers)
@@ -62,14 +95,14 @@ func ListenAllContractEvents(ctx context.Context, client *ethclient.Client, cont
 		case <-ctx.Done():
 			sub.Unsubscribe()
 			// 清空残留数据
-			for range logs {
+			for range confirmedQueue {
 			}
 			// 此时再关闭workerChan，避免workerChan关闭后，还将vLog放入workerChan导致panic
 			close(workerChan)
 			wg.Wait()
 			log.Info("Event listener stopped")
 			return
-		case vLog := <-logs:
+		case vLog := <-confirmedQueue:
 			wg.Add(1)
 			workerChan <- vLog
 		}
