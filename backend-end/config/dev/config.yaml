@@ -46,8 +46,14 @@ logging:
     - type: console
   
 geth:
-  wsAddress: "wss://eth-sepolia.g.alchemy.com/v2/_6dn2JqC0JV9irSos3S9FnkpUafPw6cX"
-  address: "https://eth-sepolia.g.alchemy.com/v2/_6dn2JqC0JV9irSos3S9FnkpUafPw6cX"
+  deployNetwork: "l2-zk"  # 可选值：l1, l2-zk
+  confimationMode: "hard" # 可选值：hard，soft
+  l1VerifierContracts:
+    linea: "0xA4d0aD7cEE00F2e0eFf5eC3a7B3A1967F815C9e6"  # Linea在L1的验证合约地址
+  wsAddressEth: "wss://eth-sepolia.g.alchemy.com/v2/_6dn2JqC0JV9irSos3S9FnkpUafPw6cX"
+  addressEth: "https://eth-sepolia.g.alchemy.com/v2/_6dn2JqC0JV9irSos3S9FnkpUafPw6cX"
+  wsAddressLinea: ""
+  addressLinea: ""
   donationContract:
     address: "0x4943FBb818f92cCb56C6bb9CF115d5248A1F0Ea7"
     abiPath: "abi/donation.abi"

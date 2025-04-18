@@ -15,6 +15,7 @@ import {
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import { request } from "./utils/api";
+import { parseJwt, isTokenExpiringSoon } from "./utils/jwt";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -24,13 +25,19 @@ function App() {
   const [signer, setSigner] = useState(null);
   const [balance, setBalance] = useState(0);
   const [symbol, setSymbol] = useState("");
+  const [error, setError] = useState(null);
   const accountsChangedListenerAdded = useRef(false);
   const connectedAccountsRef = useRef([]); // 新增 ref 用于同步状态
+
+  const [renewalTimer, setRenewalTimer] = useState(null);
+
+  
 
   const signMessage = async (currentAccount) => {
     console.log("currentAccount:", currentAccount);
     let jwt = localStorage.getItem("jwt_" + currentAccount);
-    if (jwt) {
+    let refreshJwt = localStorage.getItem("jwt_refresh_" + currentAccount);
+    if (jwt && refreshJwt) {
       return;
     }
 
@@ -55,16 +62,17 @@ function App() {
     }
 
     let signature;
-    console.log("======")
+    console.log("======");
+    const message = `please login,confirm the signature that do not cost gas\n nonce: ${nonce}`;
     try {
       signature = await window.ethereum.request({
         method: "personal_sign",
-        params: [nonce, currentAccount],
+        params: [message, currentAccount],
       });
     } catch (error) {
       console.error("Signature error:", error);
     }
-    console.log("!!!!!!")
+    console.log("!!!!!!");
 
     const requestBodyJwt = {
       currentAccount: currentAccount,
@@ -81,12 +89,82 @@ function App() {
     });
 
     if (dataJwt.code === 200) {
-      jwt = dataJwt.data;
+      jwt = dataJwt.data[0];
+      refreshJwt = dataJwt.data[1];
     } else {
       setError(dataJwt.msg || "Failed to Get jwt : " + dataJwt.msg);
     }
     console.log(`jwt_${currentAccount} :`, jwt);
+    console.log(`jwt_refresh_${currentAccount} :`, refreshJwt);
     localStorage.setItem(`jwt_${currentAccount}`, jwt);
+    localStorage.setItem(`jwt_refresh_${currentAccount}`, refreshJwt);
+  };
+
+  // 续期核心方法
+  const silentRenew = async () => {
+    if (!account) return false;
+
+    const currentAccount = account.toLowerCase();
+    const refreshToken = localStorage.getItem(`jwt_refresh_${currentAccount}`);
+
+    try {
+      const requestBodyJwt = {
+        currentAccount: currentAccount,
+        refreshJwt: refreshToken,
+      };
+      // 尝试使用refreshToken续期
+      const { data } = await request("/auth/renewJwt", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+        body: JSON.stringify(requestBodyJwt),
+      });
+
+      localStorage.setItem(`jwt_${currentAccount}`, data);
+      return true;
+    } catch (error) {
+      console.log("静默续期失败，降级到签名续期:", error);
+      return signatureBasedRenew(currentAccount);
+    }
+  };
+
+  // 签名续期降级方案
+  const signatureBasedRenew = async (address) => {
+    try {
+      // 获取新nonce
+      const { data: nonce } = await request("/auth/nonce", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ currentAccount: address }),
+      });
+      const message = `please login,confirm the signature that do not cost gas\n nonce: ${nonce}`;
+      // 触发签名（会弹窗）
+      const signature = await window.ethereum.request({
+        method: "personal_sign",
+        params: [message, address],
+      });
+
+      // 获取新token
+      const { data: tokens } = await request("/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ currentAccount: address, signature }),
+      });
+
+      localStorage.setItem(`jwt_${address}`, tokens[0]);
+      localStorage.setItem(`jwt_refresh_${address}`, tokens[1]);
+      return true;
+    } catch (error) {
+      console.error("续期失败:", error);
+      return false;
+    }
   };
 
   // 定义回调函数，用于接收余额数据
@@ -119,7 +197,7 @@ function App() {
         setConnected(true);
         console.log("Connected accounts in handleConnect:", accounts);
         // 初始化 connectedAccounts
-        connectedAccountsRef.current = accounts
+        connectedAccountsRef.current = accounts;
         // 调用 signMessage 函数
         console.log("@@@");
         // await signMessage(address);
@@ -129,7 +207,7 @@ function App() {
         setProvider(null);
         setSigner(null);
         setConnected(false);
-        connectedAccountsRef.current = []
+        connectedAccountsRef.current = [];
       }
     } else {
       console.error("Ethereum provider not found");
@@ -151,8 +229,9 @@ function App() {
     console.log("Disconnected accounts:", disconnectedAccounts);
     if (disconnectedAccounts.length > 0) {
       disconnectedAccounts.forEach((addr) => {
-        console.log('Attempting to remove:', `jwt_${addr}`); // 调试日志
+        console.log("Attempting to remove:", `jwt_${addr}`); // 调试日志
         localStorage.removeItem(`jwt_${addr}`);
+        localStorage.removeItem(`jwt_refresh_${addr}`);
         console.log(`Removed JWT for ${addr}`);
       });
     }
@@ -192,6 +271,7 @@ function App() {
         setConnected(false);
         connectedAccountsRef.current.forEach((addr) => {
           localStorage.removeItem(`jwt_${addr}`);
+          localStorage.removeItem(`jwt_refresh_${addr}`);
         });
       }
     } catch (error) {
@@ -204,8 +284,7 @@ function App() {
       connectedAccountsRef.current.forEach((addr) => {
         localStorage.removeItem(`jwt_${addr}`);
       });
-      connectedAccountsRef.current = []
-
+      connectedAccountsRef.current = [];
     }
   };
 
@@ -270,6 +349,86 @@ function App() {
       }
     };
   }, []); // 保持空依赖数组
+
+  // 新增的续期检测 useEffect
+  useEffect(() => {
+    if (!connected || !account) return;
+
+    const setupRenewalCheck = async () => {
+      const currentAccount = account.toLowerCase();
+
+      // 5min内，等待用户处理登录签名
+      const checkJWT = async () => {
+        const maxWaitForSign = 5 * 60 * 1000; 
+        let waitTime = 0;
+        while (true) {
+          const accessToken = localStorage.getItem(`jwt_${currentAccount}`);
+
+          // 找到 token 立即返回
+          if (accessToken) return accessToken;
+
+          // 未找到时等待 1000ms（非阻塞）
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          waitTime += 1000;
+          if(waitTime > maxWaitForSign) {
+            return null;
+          }
+        }
+      };
+
+      // 使用方式
+      const accessToken = await checkJWT();
+      console.log(
+        "setupRenewalCheck accessToken is : ",
+        currentAccount,
+        accessToken
+      );
+      // 防御性检测
+      if (!accessToken) {
+        console.warn("No access token found,renew not trigger!");
+        return;
+      }
+
+      const payload = parseJwt(accessToken);
+      if (!payload?.exp) {
+        console.error("Invalid JWT structure:", payload);
+        return;
+      }
+      // accessToken有效剩余时间
+      const expiresInMs = payload.exp * 1000 - Date.now();
+      // 5分钟前触发
+      const renewThreshold = 5 * 60 * 1000;
+      const delay = Math.max(expiresInMs - renewThreshold, 0);
+
+      if (delay > 0) {
+        console.log(`renew dalay time is ${delay/1000/60} min for ${currentAccount}`)
+        const timer = setTimeout(async () => {
+          // 续期
+          silentRenew().then((success) => {
+            if (success) setupRenewalCheck(); // 续期成功后，递归调用进行下次续期
+          });
+        }, delay);
+
+        setRenewalTimer(timer);
+      } else {
+        // 立即续期
+        const success = await silentRenew();
+        if (success) await setupRenewalCheck();
+      }
+    };
+
+    (async () => {
+      await setupRenewalCheck();
+    })();
+
+    // 清理函数
+    return () => {
+      if (renewalTimer) {
+        clearTimeout(renewalTimer);
+        setRenewalTimer(null);
+      }
+    };
+  }, [account, connected]);
 
   if (isLoading) {
     return (

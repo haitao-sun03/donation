@@ -415,10 +415,13 @@ export default function DonationsManage({
       });
 
       if (data.code === 200) {
-        let jwt = data.data;
+        let jwts = data.data;
         // 将 address 和 signature 发送给后端
-        console.log(`update jwt_${signer.address.toLowerCase()} :`, jwt);
-        localStorage.setItem(`jwt_${signer.address.toLowerCase()}`, jwt);
+        console.log(`update jwt_${signer.address.toLowerCase()} :`, jwts[0]);
+        localStorage.setItem(`jwt_${signer.address.toLowerCase()}`, jwts[0]);
+
+        console.log(`update jwt_refresh_${signer.address.toLowerCase()} :`, jwts[1]);
+        localStorage.setItem(`jwt_refresh_${signer.address.toLowerCase()}`, jwts[1]);
       } else {
         setError(data.msg || "Failed to refresh jwt");
       }

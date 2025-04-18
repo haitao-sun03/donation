@@ -6,11 +6,13 @@ import (
 	"log"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/go-playground/validator/v10"
 	"github.com/panjf2000/ants/v2"
 
 	"github.com/go-redis/redis/v8"
@@ -48,11 +50,16 @@ type RedisConfig struct {
 }
 
 type GethConfig struct {
-	WsAddress        string
-	Address          string
-	DonationContract DonationContractConfig
-	NftContract      NftContractConfig
-	Nft              NFTConfig
+	DeployNetwork       string `validate:"required,oneof=l1 l2-linea"`
+	ConfimationMode     string `validate:"oneof=hard soft"`
+	L1VerifierContracts L1VerifierContractsConfig
+	WsAddressEth        string
+	AddressEth          string
+	WsAddressLinea      string
+	AddressLinea        string
+	DonationContract    DonationContractConfig
+	NftContract         NftContractConfig
+	Nft                 NFTConfig
 }
 
 type DonationContractConfig struct {
@@ -75,8 +82,13 @@ type JwtConfig struct {
 	WhiteList []string
 }
 
+type L1VerifierContractsConfig struct {
+	Linea string
+}
+
 var Config Configs
 var RedisClient *redis.Client
+var validate *validator.Validate // 定义全局 validator 实例
 
 func Init(unitTestSkip bool) {
 	// 设置viper读取配置文件
@@ -84,30 +96,42 @@ func Init(unitTestSkip bool) {
 	_, filename, _, _ := runtime.Caller(0)
 	projectRoot := filepath.Dir(filepath.Dir(filename))
 	configPath := filepath.Join(projectRoot, "config")
-	viper.AddConfigPath(configPath) // 配置文件所在的路径
-	viper.SetConfigType("yaml")     // 配置文件的类型
+
 	viper.AutomaticEnv()
 	env := viper.GetString("ENV")
-	if env == "" {
-		env = "test"
+	// 配置文件所在的路径
+	if env == "test" {
+		viper.AddConfigPath(filepath.Join(configPath, "test"))
+
+	} else {
+		viper.AddConfigPath(filepath.Join(configPath, "dev"))
 	}
-	viper.SetConfigName("config." + env)
-	fmt.Println("load config file : " + "config." + env)
+	// k8s容器内挂载configMap路径
+	viper.AddConfigPath("/etc/app/config")
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
 
 	// 读取配置文件
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
 
+	fmt.Println("Loaded config file:", viper.ConfigFileUsed())
 	// 解析配置到结构体
 	if err := viper.Unmarshal(&Config); err != nil {
 		panic(fmt.Errorf("unable to decode into struct, %v", err))
 	}
 
+	validate = validator.New()
+
 	// 解析出日志配置
 	var loggingConfig logging.LoggingConfig
 	if err := viper.UnmarshalKey("logging", &loggingConfig); err != nil {
 		panic(fmt.Errorf("unable to decode into struct, %v", err))
+	}
+
+	if err := validate.Struct(Config); err != nil {
+		panic(fmt.Errorf("config validation failed: %v", err))
 	}
 
 	if !unitTestSkip {
@@ -216,23 +240,56 @@ func InitRedis() {
 var GethClient *ethclient.Client
 var GethWsClient *ethclient.Client
 
-func InitGeth() {
-	client, err := ethclient.Dial(Config.Geth.Address)
-	if err != nil {
-		panic(err)
-	}
-	GethClient = client
+var GethClientVerifier *ethclient.Client
+var GethWsClientVerifier *ethclient.Client
 
-	client, err = ethclient.Dial(Config.Geth.WsAddress)
-	if err != nil {
-		panic(err)
+func InitGeth() {
+	switch Config.Geth.DeployNetwork {
+	case "l1":
+		client, err := ethclient.Dial(Config.Geth.AddressEth)
+		if err != nil {
+			panic(err)
+		}
+		GethClient = client
+
+		client, err = ethclient.Dial(Config.Geth.WsAddressEth)
+		if err != nil {
+			panic(err)
+		}
+		GethWsClient = client
+
+	case "l2-linea":
+		client, err := ethclient.Dial(Config.Geth.AddressLinea)
+		if err != nil {
+			panic(err)
+		}
+		GethClient = client
+
+		client, err = ethclient.Dial(Config.Geth.WsAddressLinea)
+		if err != nil {
+			panic(err)
+		}
+		GethWsClient = client
+
+		client, err = ethclient.Dial(Config.Geth.AddressEth)
+		if err != nil {
+			panic(err)
+		}
+		GethClientVerifier = client
+
+		client, err = ethclient.Dial(Config.Geth.WsAddressEth)
+		if err != nil {
+			panic(err)
+		}
+		GethWsClientVerifier = client
 	}
-	GethWsClient = client
+
 }
 
 var (
 	DonationManageContract *abi.DonationManage
 	NFTContract            *abi.Nft
+	LineaSepoliaVerify     *abi.LineaSepoliaVerify
 	err                    error
 )
 
@@ -247,6 +304,19 @@ func InitContract() {
 	if err != nil {
 		log.Fatalln("NewNft error")
 		return
+	}
+
+	if strings.Contains(Config.Geth.DeployNetwork, "l2") {
+		switch Config.Geth.DeployNetwork {
+
+		case "l2-linea":
+			LineaSepoliaVerify, err = abi.NewLineaSepoliaVerify(common.HexToAddress(Config.Geth.L1VerifierContracts.Linea), GethWsClientVerifier)
+			if err != nil {
+				log.Fatalln("NewLineaSepoliaVerify error")
+				return
+			}
+		}
+
 	}
 
 }

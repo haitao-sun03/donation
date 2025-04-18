@@ -25,6 +25,7 @@ func Router() *gin.Engine {
 	auth.POST("/nonce", controllers.AuthController{}.GetNonce)
 	auth.POST("/login", controllers.AuthController{}.Login)
 	auth.POST("/refreshJWT", controllers.AuthController{}.RefreshJWT)
+	auth.POST("/renewJwt", controllers.AuthController{}.RenewJwt)
 
 	return r
 }

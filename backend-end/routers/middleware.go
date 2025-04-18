@@ -44,7 +44,7 @@ func authMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		address, roles, err := utils.VerifyJWT(tokenString)
+		address, roles, _, err := utils.VerifyJWT(tokenString)
 		if err != nil {
 			c.JSON(401, gin.H{"error": "invalid token"})
 			c.Abort()

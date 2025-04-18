@@ -4,13 +4,19 @@ pragma solidity ^0.8.22;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {NFT} from "./nft.sol";
 import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @title donates contract
  * @author Zhang haitao
  */
-contract DonationsManageContract is AutomationCompatibleInterface {
-    address public owner;
+contract DonationsManageContract is 
+    Initializable,           // 初始化控制
+    UUPSUpgradeable,         // UUPS 升级支持
+    OwnableUpgradeable,      // 可升级的权限管理
+    AutomationCompatibleInterface {
 
     /// 定义活动性质的枚举
     enum CampaignNature {
@@ -55,15 +61,18 @@ contract DonationsManageContract is AutomationCompatibleInterface {
 
     IERC20 token;
     NFT nft;
-
     mapping(uint => Campaign) public campaigns;
     /// 存储活动ID，用于活动状态更新
     uint[] public campaignsToCheck;
     uint public campaignCount;
 
+    string private constant version = "1.0.0";
+    // 存储间隙，防止未来升级时的存储冲突
+    uint256[50] private __gap;
+
     modifier onlyStarter(uint campaignId) {
         Campaign storage campaign =  campaigns[campaignId];
-        require(msg.sender == campaign.starter,"not starter");
+        require(_msgSender()  == campaign.starter,"not starter");
         _;
     }
 
@@ -80,6 +89,8 @@ contract DonationsManageContract is AutomationCompatibleInterface {
         string expectedImpact, // 预期影响
         CampaignStatus status
     );
+
+    // 业务事件
     event Donate(uint indexed id,address donater,uint amount);
     event CancellCampaign(uint indexed id,address caller,uint time);
     event CompletedCampaign(uint indexed id,address caller,uint time);
@@ -87,9 +98,21 @@ contract DonationsManageContract is AutomationCompatibleInterface {
     event Withdraw(uint indexed id,address withdrawer,uint withdrawAmount,uint time);
     event ActiveCampaign(uint indexed id,address caller,uint time);
 
-    constructor(address _token,address _nft) {
+
+    function initialize(address _token, address _nft) public initializer {
+        __Ownable_init(_msgSender()); // 初始化 Ownable
+        __UUPSUpgradeable_init();   // 初始化 UUPS
         token = IERC20(_token);
         nft = NFT(_nft);
+        _disableInitializers(); // 解决安全问题：initialize方法仅第一次部署执行一次，后续不允许在升级的upgradeToAndCall中通过delegatecall再次调用
+    }
+
+    function getVersion() external pure virtual returns(string memory) {
+        return version;
+    }
+
+    // 必须实现 UUPS 的升级权限控制,升级者必须是首次部署者
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {
     }
 
     function createCampaign(

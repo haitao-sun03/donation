@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable {
+contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable,ReentrancyGuard  {
     uint256 private _nextTokenId;
 
     mapping(string=>string) public levelToMetaDataURI;
@@ -42,10 +43,10 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         emit NFTDeployed(uris);
     }
 
-    function safeMint(address to,string memory level) public {
+    function safeMint(address to,string memory level) public nonReentrant  {
         uint256 tokenId = _nextTokenId++;
-        _safeMint(to, tokenId);
         _setTokenURI(tokenId,  levelToMetaDataURI[level]);
+        _safeMint(to, tokenId);
         emit NFTMinted(to, tokenId, level);
     }
 

@@ -12,38 +12,69 @@ var secretKey = []byte(config.Config.Jwt.SecretKey)
 
 type Roles map[string]string
 
-func GenerateJWT(address string, roles map[string]string) (string, error) {
+const (
+	JwtTypeAccess  = "access"
+	JwtTypeRefresh = "refresh"
+)
+
+func GenerateAccessJWT(address string, roles map[string]string) (string, error) {
 	// payload
 	claims := jwt.MapClaims{
-		"address": address,                               // 用户钱包地址
-		"roles":   roles,                                 // 用户角色
-		"exp":     time.Now().Add(time.Hour * 24).Unix(), // 过期时间：24小时
-		"iat":     time.Now().Unix(),                     // 签发时间
+		"address": address,                              // 用户钱包地址
+		"roles":   roles,                                // 用户角色
+		"exp":     time.Now().Add(time.Hour * 2).Unix(), // 过期时间：2小时
+		"iat":     time.Now().Unix(),                    // 签发时间
+		"type":    JwtTypeAccess,                        //令牌类型为accessToken
 	}
 
-	// 创建 token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	// 创建 accessToken
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// 签名并生成字符串
-	tokenString, err := token.SignedString(secretKey)
+	accessTokenString, err := accessToken.SignedString(secretKey)
 	if err != nil {
 		return "", err
 	}
-	return tokenString, nil
+
+	return accessTokenString, nil
 }
 
-func VerifyJWT(tokenString string) (string, Roles, error) {
+func GenerateRefreshJWT(address string, roles map[string]string) (string, error) {
+	// payload
+	claims := jwt.MapClaims{
+		"address": address,                                // 用户钱包地址
+		"roles":   roles,                                  // 用户角色
+		"exp":     time.Now().Add(time.Hour * 168).Unix(), // 过期时间：168 小时（7天）
+		"iat":     time.Now().Unix(),                      // 签发时间
+		"type":    JwtTypeRefresh,                         //令牌类型为refreshToken
+	}
+
+	// 创建 refreshToken
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// 签名并生成字符串
+	refreshTokenString, err := refreshToken.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return refreshTokenString, nil
+}
+
+func VerifyJWT(tokenString string) (string, Roles, string, error) {
 	// 解析 token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		// 验证签名方法
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			fmt.Println("unexpected signing method")
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return secretKey, nil
 	})
 
 	if err != nil {
-		return "", nil, err
+		fmt.Println("111error: ", err)
+		return "", nil, "", err
 	}
 
 	// 检查 token 是否有效
@@ -51,17 +82,20 @@ func VerifyJWT(tokenString string) (string, Roles, error) {
 		address := claims["address"].(string)
 		rolesMap, ok := claims["roles"].(map[string]any)
 		if !ok {
-			return "", nil, fmt.Errorf("invalid roles format")
+			fmt.Println("claims error: ", err)
+			return "", nil, "", fmt.Errorf("invalid roles format")
 		}
 		roles := make(Roles)
 		for key, value := range rolesMap {
 			if role, ok := value.(string); ok {
 				roles[key] = role
 			} else {
-				return "", nil, fmt.Errorf("invalid role value for key %s", key)
+				fmt.Println("rolesMap error: ", err)
+				return "", nil, "", fmt.Errorf("invalid role value for key %s", key)
 			}
 		}
-		return address, roles, nil
+		return address, roles, claims["type"].(string), nil
 	}
-	return "", nil, fmt.Errorf("invalid token")
+	fmt.Println("error: ", err)
+	return "", nil, "", fmt.Errorf("invalid token")
 }

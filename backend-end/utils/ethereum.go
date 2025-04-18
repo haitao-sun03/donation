@@ -98,7 +98,8 @@ func GenerateNonce() (string, error) {
 // 签名验证工具函数
 func VerifySignature(address, signatureHex, nonce string) (bool, error) {
 	// 构造预期消息
-	message := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(nonce), nonce)
+	signParam := "please login,confirm the signature that do not cost gas\n nonce: " + nonce
+	message := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(signParam), signParam)
 	messageHash := crypto.Keccak256Hash([]byte(message))
 
 	// 解码签名

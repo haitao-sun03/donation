@@ -11,6 +11,7 @@ import (
 	"github.com/haitao-sun03/donation/backend-end/config"
 	"github.com/haitao-sun03/donation/backend-end/db"
 	"github.com/haitao-sun03/donation/backend-end/model"
+	"github.com/haitao-sun03/donation/backend-end/service"
 	"github.com/haitao-sun03/donation/backend-end/utils"
 	"github.com/haitao-sun03/donation/backend-end/vo"
 )
@@ -101,16 +102,59 @@ func (au AuthController) Login(ctx *gin.Context) {
 		}
 	}
 
-	jwt, err := utils.GenerateJWT(loginVO.Address, claimMap)
+	var jwts []string = make([]string, 2)
+	accessJwt, err := utils.GenerateAccessJWT(loginVO.Address, claimMap)
 	if err != nil {
 		common.Fail(ctx, http.StatusInternalServerError, err)
 		return
 	}
+	refreshJwt, err := utils.GenerateRefreshJWT(loginVO.Address, claimMap)
+	if err != nil {
+		common.Fail(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	jwts[0] = accessJwt
+	jwts[1] = refreshJwt
 
-	common.Success(ctx, http.StatusOK, common.MessageSuccess, jwt, -1)
+	common.Success(ctx, http.StatusOK, common.MessageSuccess, jwts, -1)
 
 }
 
+// 通过refreshToken续期AccessToken
+func (au AuthController) RenewJwt(ctx *gin.Context) {
+	var renewVO vo.RenewVO
+	if err := ctx.ShouldBindJSON(&renewVO); err != nil {
+		common.Fail(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	// 验证刷新令牌有效性
+	address, _, jwtType, err := utils.VerifyJWT(renewVO.RefreshJwt)
+	if err != nil || jwtType != utils.JwtTypeRefresh {
+		common.Fail(ctx, http.StatusUnauthorized, errors.New("invalid refresh token"))
+		return
+	}
+	if address != renewVO.Address {
+		common.Fail(ctx, http.StatusUnauthorized, errors.New("request address mismatch address in refreshToken"))
+		return
+	}
+	authService := service.NewAuthService()
+	// 查询某用户目前所有角色
+	roles, shouldReturn := authService.GetRolesByAddress(address)
+	if shouldReturn {
+		return
+	}
+	accessJwt, err := utils.GenerateAccessJWT(address, roles)
+	if err != nil {
+		common.Fail(ctx, http.StatusUnauthorized, err)
+		return
+	}
+
+	common.Success(ctx, http.StatusOK, common.MessageSuccess, accessJwt, -1)
+
+}
+
+// 当用户新增活动，捐赠时，更新token
 func (au AuthController) RefreshJWT(ctx *gin.Context) {
 
 	var refreshJwtVO vo.RefeshJwtVO
@@ -118,26 +162,25 @@ func (au AuthController) RefreshJWT(ctx *gin.Context) {
 		common.Fail(ctx, http.StatusInternalServerError, err)
 		return
 	}
-
+	authService := service.NewAuthService()
 	// 查询某用户目前所有角色
-	userCampaignIdRoleDao := db.NewUserCampaignIdRoleDao()
-	userActivityRoles, err := userCampaignIdRoleDao.GetUserCampaignRolesByUser(refreshJwtVO.Address)
+	roles, shouldReturn := authService.GetRolesByAddress(refreshJwtVO.Address)
+	if shouldReturn {
+		return
+	}
+	var jwts []string = make([]string, 2)
+	accessJwt, err := utils.GenerateAccessJWT(refreshJwtVO.Address, roles)
 	if err != nil {
 		common.Fail(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
-	roles := make(map[string]string)
-	for _, userActivityRole := range userActivityRoles {
-		campaignIdStr := strconv.FormatUint(uint64(userActivityRole.CampaignId), 10)
-		roles[campaignIdStr] = userActivityRole.Role
-	}
-
-	jwt, err := utils.GenerateJWT(refreshJwtVO.Address, roles)
+	refreshJwt, err := utils.GenerateRefreshJWT(refreshJwtVO.Address, roles)
 	if err != nil {
 		common.Fail(ctx, http.StatusInternalServerError, err)
 		return
 	}
-
-	common.Success(ctx, http.StatusOK, common.MessageSuccess, jwt, -1)
+	jwts[0] = accessJwt
+	jwts[1] = refreshJwt
+	common.Success(ctx, http.StatusOK, common.MessageSuccess, jwts, -1)
 }
