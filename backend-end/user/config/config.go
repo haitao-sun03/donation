@@ -61,14 +61,16 @@ func Init() {
 	viper.AutomaticEnv()
 	env := viper.GetString("ENV")
 	// 配置文件所在的路径
-	if env == "test" {
-		viper.AddConfigPath(filepath.Join(configPath, "test"))
-
-	} else {
+	switch env {
+	case "dev":
 		viper.AddConfigPath(filepath.Join(configPath, "dev"))
+	case "test":
+		viper.AddConfigPath(filepath.Join(configPath, "test"))
+	default:
+		// k8s容器内挂载configMap路径
+		viper.AddConfigPath("/etc/app/config")
 	}
-	// k8s容器内挂载configMap路径
-	viper.AddConfigPath("/etc/app/config")
+
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 
