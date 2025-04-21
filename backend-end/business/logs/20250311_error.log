@@ -1,0 +1,1 @@
+time="2025-03-11T10:38:12+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:7de0:1922:12f3:3a55]:53741->[2606:4700::6813:9d0e]:443: wsarecv: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."

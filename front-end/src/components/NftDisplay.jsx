@@ -35,7 +35,7 @@ const NftDisplay = ({ currentAddress }) => {
       try {
         const requestBody = { user: currentAddress };
 
-        const data = await request("/nft/nftGroupByUser", {
+        const data = await request("/core/nft/nftGroupByUser", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

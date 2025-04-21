@@ -1,0 +1,55 @@
+db:
+  host: localhost
+  port: 3307
+  user: root
+  password: 123456
+  dbname: user
+  sslmode: disable
+
+redis:
+  address: localhost:6379
+  password: ""
+  db: 0
+
+logging:
+  level: info
+  format: text
+  outputs:
+    - type: file
+      level: debug
+      filename: "20060102_debug.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: file
+      level: info
+      filename: "20060102_info.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: file
+      level: warn
+      filename: "20060102_warn.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: file
+      level: error
+      filename: "20060102_error.log"
+      maxSize: 500
+      maxBackups: 3
+      maxAge: 28
+      compress: true
+    - type: console
+
+jwt:
+  secretKey: "1234567890"
+  whiteList: 
+    - "auth/nonce"
+    - "auth/login"
+    - "auth/renewJwt"
+    - "auth/getUserRole"
+    - "auth/addUserRole"

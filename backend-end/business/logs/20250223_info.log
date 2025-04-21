@@ -1,0 +1,8 @@
+time="2025-02-23T10:47:52+08:00" level=info msg="Minting NFT for Silver at 20,donor :0xCdF6d8762A519e2e15E12C8f78156AF30A5F2471"
+time="2025-02-23T10:48:12+08:00" level=warning msg="Unhandled event signature: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+time="2025-02-23T10:48:12+08:00" level=warning msg="Unhandled event signature: 0xf8e1a15aba9398e019f0b49df1a4fde98ee17ae345cb5f6b5e2c27f5033e8ce7"
+time="2025-02-23T10:48:12+08:00" level=warning msg="Unhandled event signature: 0xd35bb95e09c04b219e35047ce7b7b300e3384264ef84a40456943dbc0fc17c14"
+time="2025-02-23T10:48:13+08:00" level=info msg="Minting NFT for Diamond at 80,donor :0xF21a7e725787d7F2Cb1d6c33e29091CAD522008b"
+time="2025-02-23T10:48:36+08:00" level=warning msg="Unhandled event signature: 0xf8e1a15aba9398e019f0b49df1a4fde98ee17ae345cb5f6b5e2c27f5033e8ce7"
+time="2025-02-23T10:48:36+08:00" level=warning msg="Unhandled event signature: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+time="2025-02-23T10:48:36+08:00" level=warning msg="Unhandled event signature: 0xd35bb95e09c04b219e35047ce7b7b300e3384264ef84a40456943dbc0fc17c14"

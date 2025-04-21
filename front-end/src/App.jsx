@@ -46,7 +46,7 @@ function App() {
       currentAccount: currentAccount,
     };
 
-    const dataLogin = await request("/auth/nonce", {
+    const dataLogin = await request("/user/auth/nonce", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,7 +79,7 @@ function App() {
       signature: signature,
     };
 
-    const dataJwt = await request("/auth/login", {
+    const dataJwt = await request("/user/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -113,7 +113,7 @@ function App() {
         refreshJwt: refreshToken,
       };
       // 尝试使用refreshToken续期
-      const { data } = await request("/auth/renewJwt", {
+      const { data } = await request("/user/auth/renewJwt", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${refreshToken}`,
@@ -133,7 +133,7 @@ function App() {
   const signatureBasedRenew = async (address) => {
     try {
       // 获取新nonce
-      const { data: nonce } = await request("/auth/nonce", {
+      const { data: nonce } = await request("/user/auth/nonce", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -149,7 +149,7 @@ function App() {
       });
 
       // 获取新token
-      const { data: tokens } = await request("/auth/login", {
+      const { data: tokens } = await request("/user/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

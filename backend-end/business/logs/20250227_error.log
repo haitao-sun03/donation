@@ -1,0 +1,6 @@
+time="2025-02-27T15:03:17+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:6c46:ea2d:508e:5d55]:46802->[2606:4700::6813:9d0e]:443: wsarecv: An established connection was aborted by the software in your host machine."
+time="2025-02-27T16:00:19+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"
+time="2025-02-27T16:19:56+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:9cf3:2697:836:b871]:25120->[2606:4700::6813:9d0e]:443: wsarecv: An existing connection was forcibly closed by the remote host."
+time="2025-02-27T17:31:56+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"
+time="2025-02-27T17:41:37+08:00" level=error msg="Subscription error: write tcp [2408:8471:b14:2c91:9cf3:2697:836:b871]:42800->[2606:4700::6813:9d0e]:443: i/o timeout"
+time="2025-02-27T20:58:28+08:00" level=error msg="Subscription error: write tcp [2408:8471:b14:2c91:9cf3:2697:836:b871]:43821->[2606:4700::6813:9d0e]:443: wsasend: An existing connection was forcibly closed by the remote host."

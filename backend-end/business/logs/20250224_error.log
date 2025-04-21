@@ -1,0 +1,6 @@
+time="2025-02-24T11:56:19+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"
+time="2025-02-24T12:13:00+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:58ee:2324:a6ff:2da3]:43887->[2606:4700::6813:9e0e]:443: wsarecv: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."
+time="2025-02-24T12:52:43+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:58ee:2324:a6ff:2da3]:53790->[2606:4700::6813:9e0e]:443: wsarecv: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."
+time="2025-02-24T14:27:13+08:00" level=error msg="Failed to mint NFT" error="invalid sender"
+time="2025-02-24T14:27:13+08:00" level=error msg="Failed to handle event: invalid sender"
+time="2025-02-24T18:14:24+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:58ee:2324:a6ff:2da3]:26337->[2606:4700::6813:9d0e]:443: wsarecv: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."

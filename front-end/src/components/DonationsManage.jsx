@@ -302,7 +302,7 @@ export default function DonationsManage({
 
       console.log("Request body:", requestBody);
 
-      const data = await request("/campaign/list", {
+      const data = await request("/core/campaign/list", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -405,7 +405,7 @@ export default function DonationsManage({
 
       console.log("Jwt refresh request body:", requestBody);
 
-      const data = await request("/auth/refreshJWT", {
+      const data = await request("/user/auth/refreshJWT", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -591,7 +591,7 @@ export default function DonationsManage({
         requestBody,
       });
 
-      const data = await request('/donation/list', {
+      const data = await request('/core/donation/list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

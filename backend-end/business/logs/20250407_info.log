@@ -1,0 +1,2 @@
+time="2025-04-07T18:53:11+08:00" level=info msg="ConfimationMode(hard),Init EventDispatchers and Start WatchDataFinalizedV3"
+time="2025-04-07T19:25:48+08:00" level=info msg="dispatch event,contains L2 blocks from  11549848  to  11555389"

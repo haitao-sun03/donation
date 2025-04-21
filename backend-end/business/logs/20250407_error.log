@@ -1,0 +1,1 @@
+time="2025-04-07T19:12:27+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"

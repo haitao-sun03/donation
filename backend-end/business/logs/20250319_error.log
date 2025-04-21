@@ -1,0 +1,4 @@
+time="2025-03-19T11:09:24+08:00" level=error msg="Failed to handle event: Error 1062 (23000): Duplicate entry '0xCdF6d8762A519e2e15E12C8f78156AF30A5F2471-7-donor' for key 'user_activity_roles.PRIMARY'"
+time="2025-03-19T11:28:36+08:00" level=error msg="Failed to handle event: Error 1292 (22007): Incorrect datetime value: '0000-00-00' for column 'block_time' at row 1"
+time="2025-03-19T11:32:45+08:00" level=error msg="Failed to handle event: Error 1292 (22007): Incorrect datetime value: '0000-00-00' for column 'block_time' at row 1"
+time="2025-03-19T15:12:02+08:00" level=error msg="Subscription error: read tcp [2408:8471:b13:ff04:2dc4:7902:1d00:8ca0]:53081->[2606:4700::6813:9d0e]:443: wsarecv: An established connection was aborted by the software in your host machine."

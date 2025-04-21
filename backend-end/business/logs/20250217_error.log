@@ -1,0 +1,6 @@
+time="2025-02-17T12:49:28+08:00" level=error msg="Failed to handle event: invalid length, need 256 bits"
+time="2025-02-17T12:55:16+08:00" level=error msg="Failed to handle event: invalid length, need 256 bits"
+time="2025-02-17T13:04:51+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"
+time="2025-02-17T13:08:04+08:00" level=error msg="Failed to get transact opts" error="failed to parse private key: invalid length, need 256 bits, key length: 0"
+time="2025-02-17T13:08:04+08:00" level=error msg="Failed to handle event: failed to parse private key: invalid length, need 256 bits, key length: 0"
+time="2025-02-17T23:22:20+08:00" level=error msg="Subscription error: read tcp [2408:8471:9c00:1c01:ed34:a5b:1a8d:9164]:26305->[2606:4700::6813:9e0e]:443: wsarecv: An established connection was aborted by the software in your host machine."

@@ -1,0 +1,2 @@
+time="2025-02-21T14:37:46+08:00" level=error msg="Subscription error: write tcp [2408:8471:b14:2c91:6b:733e:c01a:5a2c]:58815->[2606:4700::6813:9d0e]:443: wsasend: An existing connection was forcibly closed by the remote host."
+time="2025-02-21T19:45:48+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:a50d:1c23:2d0c:caf3]:16281->[2606:4700::6813:9d0e]:443: i/o timeout"

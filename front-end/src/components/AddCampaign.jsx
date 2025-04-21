@@ -86,7 +86,7 @@ const AddCampaign = ({ contractAddress }) => {
 
       console.log("Jwt refresh request body:", requestBody);
 
-      const data = await request("/auth/refreshJWT", {
+      const data = await request("/user/auth/refreshJWT", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

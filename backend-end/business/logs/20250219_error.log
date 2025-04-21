@@ -1,0 +1,5 @@
+time="2025-02-19T10:14:29+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"
+time="2025-02-19T18:27:22+08:00" level=error msg="Subscription error: write tcp [2408:8471:b14:2c91:d873:5044:fd86:4021]:20466->[2606:4700::6813:9d0e]:443: wsasend: An existing connection was forcibly closed by the remote host."
+time="2025-02-19T18:37:07+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"
+time="2025-02-19T19:51:06+08:00" level=error msg="Subscription error: websocket: close 1006 (abnormal closure): unexpected EOF"
+time="2025-02-19T20:03:00+08:00" level=error msg="Failed to parse event: failed to unpack StartCampaign event: abi: field nature can't be found in the given value"

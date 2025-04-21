@@ -1,0 +1,2 @@
+time="2025-02-28T11:43:50+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:f4d7:270f:2619:f997]:26181->[2606:4700::6813:9e0e]:443: wsarecv: An existing connection was forcibly closed by the remote host."
+time="2025-02-28T19:39:14+08:00" level=error msg="Failed to handle event: Error 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'CONFLICT DO NOTHING' at line 1"

@@ -1,0 +1,1 @@
+time="2025-03-07T15:08:00+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:ad8d:588f:4ead:51af]:17453->[2606:4700::6813:9e0e]:443: wsarecv: An established connection was aborted by the software in your host machine."

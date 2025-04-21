@@ -1,0 +1,2 @@
+time="2025-02-22T10:25:27+08:00" level=error msg="Failed to handle event: Error 1062 (23000): Duplicate entry '4' for key 'campaigns.idx_campaign'"
+time="2025-02-22T10:42:50+08:00" level=error msg="Subscription error: read tcp [2408:8471:b14:2c91:5863:dd87:604c:eb2f]:33769->[2606:4700::6813:9e0e]:443: wsarecv: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."

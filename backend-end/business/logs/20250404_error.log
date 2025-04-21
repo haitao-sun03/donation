@@ -1,0 +1,4 @@
+time="2025-04-04T17:50:50+08:00" level=error msg="Subscription error: read tcp [2408:8471:a0f:71ae:4800:66:aa69:541a]:36343->[2606:4700::6813:9e0e]:443: wsarecv: An established connection was aborted by the software in your host machine."
+time="2025-04-04T22:13:54+08:00" level=error msg="Subscription error: read tcp [2408:8471:a0f:71ae:84a4:2c9:87a0:6151]:37666->[2606:4700::6813:9d0e]:443: wsarecv: An established connection was aborted by the software in your host machine."
+time="2025-04-04T22:53:42+08:00" level=info msg="l2 0xd7c68cc294319bbddaefc6f5cebd1610081a951231f07c36779acba33df30619(11437070) not recieve l1Hash,enter the next 1 30 minutes"
+time="2025-04-04T22:53:42+08:00" level=error msg="Subscription error: write tcp [2408:8471:a0f:71ae:84a4:2c9:87a0:6151]:48566->[2606:4700::6813:9d0e]:443: wsasend: An existing connection was forcibly closed by the remote host."
