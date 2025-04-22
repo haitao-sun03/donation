@@ -15,6 +15,7 @@ donations_manage/coverage.json
 donations_manage/ignition/deployments/chain-31337
 donations_manage/.env.enc
 
-backend-end/logs/
+backend-end/business/logs
+backend-end/user/logs
 
 .vscode/

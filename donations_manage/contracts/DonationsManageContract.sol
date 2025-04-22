@@ -83,10 +83,10 @@ contract DonationsManageContract is
         uint goal,
         uint startTime,
         uint endTime,
-        CampaignNature nature, // 新增字段
-        Beneficiary beneficiary, // 新增字段
-        string purpose, // 活动目的
-        string expectedImpact, // 预期影响
+        CampaignNature nature,
+        Beneficiary beneficiary,
+        string purpose,
+        string expectedImpact,
         CampaignStatus status
     );
 
@@ -98,13 +98,20 @@ contract DonationsManageContract is
     event Withdraw(uint indexed id,address withdrawer,uint withdrawAmount,uint time);
     event ActiveCampaign(uint indexed id,address caller,uint time);
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        // 禁用的是逻辑合约自身的初始化能力
+        _disableInitializers(); 
+    }
 
+    // 通过initializer确保修饰方法只能被调用一次
     function initialize(address _token, address _nft) public initializer {
+        require(_token != address(0), "Token address cannot be zero");
+        require(_nft != address(0), "NFT address cannot be zero");
         __Ownable_init(_msgSender()); // 初始化 Ownable
         __UUPSUpgradeable_init();   // 初始化 UUPS
         token = IERC20(_token);
         nft = NFT(_nft);
-        _disableInitializers(); // 解决安全问题：initialize方法仅第一次部署执行一次，后续不允许在升级的upgradeToAndCall中通过delegatecall再次调用
     }
 
     function getVersion() external pure virtual returns(string memory) {

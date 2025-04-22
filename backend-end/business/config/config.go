@@ -28,11 +28,12 @@ import (
 )
 
 type Configs struct {
-	DB      DBConfig
-	Redis   RedisConfig
-	Geth    GethConfig
-	Jwt     JwtConfig
-	Service ServiceConfig
+	ServiceName string
+	DB          DBConfig
+	Redis       RedisConfig
+	Geth        GethConfig
+	Jwt         JwtConfig
+	Service     ServiceConfig
 }
 
 type ServiceConfig struct {
@@ -263,12 +264,13 @@ func InitGeth() {
 		GethWsClient = client
 
 	case "l2-linea":
+		fmt.Println("Config.Geth.AddressLinea: ", Config.Geth.AddressLinea)
 		client, err := ethclient.Dial(Config.Geth.AddressLinea)
 		if err != nil {
 			panic(err)
 		}
 		GethClient = client
-
+		fmt.Println("Config.Geth.WsAddressLinea: ", Config.Geth.WsAddressLinea)
 		client, err = ethclient.Dial(Config.Geth.WsAddressLinea)
 		if err != nil {
 			panic(err)

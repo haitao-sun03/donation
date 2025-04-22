@@ -1,0 +1,284 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [
+    {
+      "address": "0x3C549F7607bFA1Ccaf96fb777D06A1a7BF1B8cC5",
+      "txHash": "0x0cafd74f4dabfd0bf288c2b9cbe1f8c5c79d7e90d92489db1c4a8d33146cbbe2",
+      "kind": "uups"
+    }
+  ],
+  "impls": {
+    "4c0dea23785b64ce696e665c929ae1f87f70176a81c46425616b712d32d2c7aa": {
+      "address": "0x7328677f4748f2a1F1564749F968456294c883ca",
+      "txHash": "0xccc333681986a44af0d63bf8b59bacd912859ce3fa3015ffb8e457c158644967",
+      "layout": {
+        "solcVersion": "0.8.28",
+        "storage": [
+          {
+            "label": "token",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IERC20)1954",
+            "contract": "DonationsManageContract",
+            "src": "contracts\\DonationsManageContract.sol:69"
+          },
+          {
+            "label": "nft",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(NFT)10749",
+            "contract": "DonationsManageContract",
+            "src": "contracts\\DonationsManageContract.sol:69"
+          },
+          {
+            "label": "campaigns",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_struct(Campaign)9389_storage)",
+            "contract": "DonationsManageContract",
+            "src": "contracts\\DonationsManageContract.sol:70"
+          },
+          {
+            "label": "campaignsToCheck",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_uint256)dyn_storage",
+            "contract": "DonationsManageContract",
+            "src": "contracts\\DonationsManageContract.sol:74"
+          },
+          {
+            "label": "campaignCount",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "DonationsManageContract",
+            "src": "contracts\\DonationsManageContract.sol:74"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "DonationsManageContract",
+            "src": "contracts\\DonationsManageContract.sol:80"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)90_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)30_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IERC20)1954": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(NFT)10749": {
+            "label": "contract NFT",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Beneficiary)9352": {
+            "label": "enum DonationsManageContract.Beneficiary",
+            "members": [
+              "Individuals",
+              "NonProfitOrganizations",
+              "Communities",
+              "Other"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(CampaignNature)9346": {
+            "label": "enum DonationsManageContract.CampaignNature",
+            "members": [
+              "Charity",
+              "Education",
+              "Health",
+              "Environment",
+              "Other"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(CampaignStatus)9358": {
+            "label": "enum DonationsManageContract.CampaignStatus",
+            "members": [
+              "Pending",
+              "Active",
+              "Completed",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Campaign)9389_storage)": {
+            "label": "mapping(uint256 => struct DonationsManageContract.Campaign)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Campaign)9389_storage": {
+            "label": "struct DonationsManageContract.Campaign",
+            "members": [
+              {
+                "label": "title",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "goal",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "totalDonated",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "endTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "nature",
+                "type": "t_enum(CampaignNature)9346",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "beneficiary",
+                "type": "t_enum(Beneficiary)9352",
+                "offset": 1,
+                "slot": "5"
+              },
+              {
+                "label": "purpose",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "expectedImpact",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "donations",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(CampaignStatus)9358",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "starter",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "9"
+              }
+            ],
+            "numberOfBytes": "320"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

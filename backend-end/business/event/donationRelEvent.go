@@ -112,9 +112,6 @@ func (h *DonationHandler) saveDonationRecord(donationRecord *abi.DonationManageD
 			Where("campaign_id = ?", donationRecord.Id.String()).
 			Where("donor = ?", donationRecord.Donater.Hex()).
 			First(&existing).Error
-		if err != nil {
-			return err
-		}
 
 		// db.Transaction回调方法中需要返回error，若为nil，则提交事务，否则rollback
 		if !donationRecord.Id.IsInt64() {
@@ -135,12 +132,12 @@ func (h *DonationHandler) saveDonationRecord(donationRecord *abi.DonationManageD
 		// 调用POST接口
 		reqData := UserRoleVO{
 			Address:    donationRecord.Donater.Hex(),
-			Role:       model.StarterRole,
+			Role:       model.DonorRole,
 			CampaignId: campaignIdInt64,
 		}
-		response, status, err := client.PostJSON("/auth/getUserRole", reqData)
+		response, status, errHttp := client.PostJSON("/auth/getUserRole", reqData)
 		log.Infof("POST JSON Response [%d]: %s\n", status, response)
-		if err != nil || status != 200 {
+		if errHttp != nil || status != 200 {
 			// 处理错误
 			log.Error("post getUserRole error,the status code is:", status)
 		}
@@ -155,23 +152,6 @@ func (h *DonationHandler) saveDonationRecord(donationRecord *abi.DonationManageD
 				log.Error("post addUserRole error,the status code is:", status)
 			}
 		}
-		// var userActivityRoleModel model.UserActivityRoleModel
-		// result := tx.
-		// 	Where("address = ?", donationRecord.Donater.Hex()).
-		// 	Where("campaign_id = ?", campaignIdInt64).
-		// 	Where("role = ?", model.DonorRole).
-		// 	First(&userActivityRoleModel)
-		// // 若该用户address之前没有对campaign_id进行捐赠
-		// if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
-		// 	if err := tx.Exec(
-		// 		"INSERT INTO user_activity_roles (address, campaign_id, role) VALUES (?, ?, ?)",
-		// 		donationRecord.Donater.Hex(),
-		// 		campaignIdInt64,
-		// 		model.DonorRole,
-		// 	).Error; err != nil {
-		// 		return err
-		// 	}
-		// }
 
 		switch {
 		case err == gorm.ErrRecordNotFound:

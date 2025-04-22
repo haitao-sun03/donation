@@ -14,12 +14,6 @@ import (
 	"github.com/haitao-sun03/donation/backend-end/routers"
 )
 
-type PostRequest struct {
-	Address    string `json:"address" binding:"required"`
-	Role       string `json:"role" binding:"required"`
-	CampaignId int    `json:"campaignId" binding:"required"`
-}
-
 func main() {
 	event.GetEventHandlers()
 	ctx, cancel := context.WithCancel(context.Background())
