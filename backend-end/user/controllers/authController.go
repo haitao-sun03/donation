@@ -185,6 +185,7 @@ func (au AuthController) RefreshJWT(ctx *gin.Context) {
 	common.Success(ctx, http.StatusOK, common.MessageSuccess, jwts, -1)
 }
 
+// get uer roles for other service
 func (au AuthController) GetUserRole(ctx *gin.Context) {
 	var userRoleVO vo.UserRoleVO
 	if err := ctx.ShouldBindBodyWithJSON(&userRoleVO); err != nil {
@@ -197,6 +198,7 @@ func (au AuthController) GetUserRole(ctx *gin.Context) {
 	common.Success(ctx, http.StatusOK, common.MessageSuccess, exists, -1)
 }
 
+// add uer roles for other service
 func (au AuthController) AddUserRole(ctx *gin.Context) {
 
 	var userRoleVO vo.UserRoleVO

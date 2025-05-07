@@ -1,122 +1,166 @@
 # EquaSeed Donation
 
-## Overview
+## 概述
 
-Welcome to AquaSeed, a web3-based donation platform is a full-stack application that allows users to manage and donate to various campaigns. It consists of three main components:
-1. **Frontend**: A React application that provides a user interface for interacting with the donation system.
-2. **Backend**: A Go application that handles business logic, database interactions, and API requests.
-3. **Smart Contracts**: Solidity contracts deployed on the Ethereum blockchain for managing donations and campaigns.
+EquaSeed是一个基于Web3技术的捐赠平台，是一个全栈应用程序，允许用户管理和向各种活动进行捐赠。它由三个主要组件组成：
+1. **前端**：一个React应用程序，提供与捐赠系统交互的用户界面。
+2. **后端**：一个Go应用程序，处理业务逻辑、数据库交互和API请求，包含业务服务和用户服务。
+3. **智能合约**：部署在以太坊区块链上的Solidity合约，用于管理捐赠和活动。
 
-   - **DonationsManageContract**: 0x6Cf23549b2678027E4A1dDdC34c59c6255d05D13
-   - **NFT**: 0x0A7Ceb2B9707123ceD34B0f6e444Cc5562bEA3DD
-   - **Token**: 0x8D192A2f68700AEAeA4F5D3ADd666198e2047A81
+## 项目结构
 
-    **contracts above have been deployed on linea sepolia testnet**
+### 后端结构
 
-## Project Structure
+- **backend-end/**: 包含Go后端代码。
+  - **business/**: 业务主服务
+    - `controllers/`: HTTP请求处理器。
+    - `db/`: 数据库访问对象。
+    - `event/`: 事件监听器。
+    - `model/`: 数据模型。
+    - `routers/`: HTTP路由器。
+    - `service/`: 业务服务层。
+    - `utils/`: 实用工具函数。
+    - `vo/`: 值对象。
+    - `config/`: 配置文件。
+    - `abi/`: 智能合约的ABI文件。
+    - `main.go`: 后端应用程序的入口点。
+  - **user/**: 用户服务，负责用户注册，登录，颁发token
+    - `controllers/`: 用户相关HTTP请求处理器。
+    - `db/`: 用户数据库访问对象。
+    - `model/`: 用户数据模型。
+    - `routers/`: 用户服务HTTP路由器。
+    - `service/`: 用户服务层。
+    - `utils/`: 用户服务实用工具函数。
+    - `vo/`: 用户服务值对象。
+    - `main.go`: 用户服务的入口点。
 
-- **backend-end/**: Contains the Go backend code.
-  - `controllers/`: Handlers for HTTP requests.
-  - `db/`: Database access objects.
-  - `event/`: Event listeners.
-  - `model/`: Data models.
-  - `routers/`: HTTP routers.
-  - `utils/`: Utility functions.
-  - `vo/`: Value objects.
-  - `config/`: Configuration files.
-  - `abi/`: ABI files for smart contracts.
-  - `main.go`: Entry point for the backend application.
+### 智能合约结构
 
-- **donations_manage/**: Contains Solidity smart contracts and deployment scripts.
-  - `contracts/`: Solidity contract files.
-  - `deploy/`: Deployment scripts.
-  - `deployments/`: Deployment artifacts.
-  - `hardhat.config.js`: Hardhat configuration file.
-  - `README.md`: Existing README for smart contracts.
+- **donations_manage/**: 包含Solidity智能合约和部署脚本。
+  - `contracts/`: Solidity合约文件。
+    - `DonationsManageContract.sol`: 管理捐赠活动的创建和管理。
+    - `DonationsManageContractV2.sol`: 捐赠管理合约的升级版本。
+    - `nft.sol`: 管理与捐赠相关的非同质化代币(NFTs)。
+    - `token.sol`: 管理用于捐赠的同质化代币。
+    - `temp.sol`: 临时合约文件。
+  - `deploy/`: 部署脚本。
+  - `deployments/`: 部署构件。
+  - `meta_data/`: NFT元数据文件。
+  - `hardhat.config.js`: Hardhat配置文件。
 
-- **front-end/**: Contains the React frontend code.
-  - `src/`: Source code for the React application.
-  - `public/`: Public assets.
-  - `package.json`: Project metadata and dependencies.
-  - `package-lock.json`: Dependency lock file.
+### 前端结构
 
-## Setup Instructions
+- **front-end/**: 包含React前端代码。
+  - `src/`: React应用程序的源代码。
+    - `components/`: React组件。
+      - `AddCampaign.jsx`: 添加新捐赠活动的组件。
+      - `DonationHome.jsx`: 显示捐赠活动的主页组件。
+      - `DonationsManage.jsx`: 管理捐赠活动的组件。
+      - `NftDisplay.jsx`: 显示NFT的组件。
+      - `TxDialog.jsx`: 交易对话框组件。
+    - `contracts/`: 合约交互相关代码。
+    - `utils/`: 前端实用工具函数。
+  - `public/`: 公共资产。
+  - `package.json`: 项目元数据和依赖项。
 
-### Backend
+## 设置说明
 
-1. **Install Go**: Ensure you have Go installed on your system. You can download it from [golang.org](https://golang.org/dl/).
-2. **Install Dependencies**: Navigate to the `backend-end/` directory and run:
+### 后端
+
+1. **安装Go**: 确保您的系统上安装了Go。您可以从[golang.org](https://golang.org/dl/)下载。
+2. **安装依赖项**: 导航到`backend-end/business/`和`backend-end/user/`目录并运行：
    ```sh
    go mod tidy
    ```
-3. **Run the Backend**: Start the backend server by running:
+3. **运行后端**: 通过运行以下命令启动后端服务器：
    ```sh
+   # 业务主服务
+   cd backend-end/business
    $env:ENV="dev";go run main.go
+   # 或
+   $env:ENV="test";go run main.go
+   
+   # 用户服务
+   cd backend-end/user
+   $env:ENV="dev";go run main.go
+   # 或
    $env:ENV="test";go run main.go
    ```
 
-### Smart Contracts
+### 智能合约
 
-1. **Install Node.js and npm**: Ensure you have Node.js and npm installed on your system. You can download them from [nodejs.org](https://nodejs.org/).
-2. **Install Dependencies**: Navigate to the `donations_manage/` directory and run:
+1. **安装Node.js和npm**: 确保您的系统上安装了Node.js和npm。您可以从[nodejs.org](https://nodejs.org/)下载。
+2. **安装依赖项**: 导航到`donations_manage/`目录并运行：
    ```sh
    npm install
    ```
-3. **Set env-enc password and key-value**: Set env-enc password and key-value(PRIVATE_KEY,SEPOLIA_RPC_URL,LINEA_SEPOLIA_RPC_URL,LINEA_API_KEY) By commands below:
+3. **设置env-enc密码和键值对**: 通过以下命令设置env-enc密码和键值对(PRIVATE_KEY,SEPOLIA_RPC_URL,LINEA_SEPOLIA_RPC_URL,LINEA_API_KEY)：
    ```sh
    npx env-enc set-pwd
    npx env-enc set
    ```
-4. **Compile Contracts**: Compile the Solidity contracts by running:
+4. **编译合约**: 通过运行以下命令编译Solidity合约：
    ```sh
    npx hardhat compile
    ```
-5. **Deploy Contracts**: Deploy the contracts to a local Ethereum network (e.g., Hardhat Network) by running:
+5. **部署合约**: 通过运行以下命令将合约部署到本地以太坊网络（例如，Hardhat Network）：
    ```sh
-   npx hardhat deploy --network lineaSepolia
+   npx hardhat deploy --network sepolia
    ```
 
-### Frontend
+### 前端
 
-1. **Install Node.js and npm**: Ensure you have Node.js and npm installed on your system. You can download them from [nodejs.org](https://nodejs.org/).
-2. **Install Dependencies**: Navigate to the `front-end/` directory and run:
+1. **安装Node.js和npm**: 确保您的系统上安装了Node.js和npm。您可以从[nodejs.org](https://nodejs.org/)下载。
+2. **安装依赖项**: 导航到`front-end/`目录并运行：
    ```sh
    npm install
    ```
-3. **Run the Frontend**: Start the frontend development server by running:
+3. **运行前端**: 通过运行以下命令启动前端开发服务器：
    ```sh
-   npm start
+   npm run dev
    ```
 
-## Key Components
+## 主要组件
 
-### Backend
+### 后端
 
-- **Controllers**: Handle HTTP requests and interact with the database and smart contracts.
-- **Database**: Manages campaign and donation data.
-- **Smart Contracts**: Interact with the Ethereum blockchain for managing donations and campaigns.
+- **业务主服务**: 处理捐赠活动和交易相关的业务逻辑,通过geth监听链上事件，同步数据至mysql，提高系统性能。
+- **用户服务**: 处理用户注册，登录，颁发token，与token续期等
+- **数据库**: 管理活动和捐赠，用户，权限数据
+- **智能合约交互**: 与以太坊区块链上的智能合约交互，管理捐赠和活动。
 
-### Smart Contracts
+### 智能合约
 
-- **DonationsManageContract.sol**: Manages the creation and management of donation campaigns.
-- **NFT.sol**: Manages non-fungible tokens (NFTs) associated with donations.
-- **Token.sol**: Manages fungible tokens used for donations.
+- **DonationsManageContract.sol**: 管理捐赠活动的创建和管理。
+- **DonationsManageContractV2.sol**: 捐赠管理合约的升级版本，提供更多功能。
+- **nft.sol**: 管理与捐赠相关的非同质化代币(NFTs)，捐赠者可以获得NFT作为奖励。
+- **token.sol**: 管理用于捐赠的同质化代币，平台的原生代币。
 
-### Frontend
+### 前端
 
-- **ConnectWallet.jsx**: Component for connecting to a user's Ethereum wallet.
-- **DonationHome.jsx**: Component for displaying donation campaigns.
-- **DonationsManage.jsx**: Component for managing donation campaigns.
+- **AddCampaign.jsx**: 用于创建新的捐赠活动的组件。
+- **DonationHome.jsx**: 显示所有可用捐赠活动的主页组件。
+- **DonationsManage.jsx**: 用于管理现有捐赠活动的组件。
+- **NftDisplay.jsx**: 显示用户拥有的NFT的组件。
+- **TxDialog.jsx**: 显示交易状态和确认的对话框组件。
 
-## Contributing
+## 功能特点
 
-Contributions are welcome! Please follow these steps to contribute to the project:
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Make your changes and commit them.
-4. Push your changes to your fork.
-5. Open a pull request to the main repository.
+1. **创建捐赠活动**: 用户可以创建新的捐赠活动，设置目标金额、截止日期和描述。
+2. **捐赠**: 用户可以向活动捐赠ETH或平台代币。
+3. **NFT奖励**: 捐赠者可以根据捐赠金额获得不同等级的NFT奖励。
+4. **活动管理**: 活动创建者可以管理其活动，查看捐赠情况和提取资金。
+5. **用户认证**: 用户可以创建账户并登录，管理其捐赠历史和NFT收藏。
 
-## License
+## 贡献
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+欢迎贡献！请按照以下步骤为项目做出贡献：
+1. Fork仓库。
+2. 为您的功能或错误修复创建一个新分支。
+3. 进行更改并提交。
+4. 将更改推送到您的fork。
+5. 向主仓库提交拉取请求。
+
+## 许可证
+
+本项目根据MIT许可证授权。有关详细信息，请参阅[LICENSE](LICENSE)文件。

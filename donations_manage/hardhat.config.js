@@ -31,7 +31,7 @@ module.exports = {
     },
     lineaSepolia: {
       gasPrice: "auto",
-      accounts: [process.env.PRIVATE_KEY],
+      accounts: [PRIVATE_KEY],
       url: LINEA_SEPOLIA_RPC_URL,
       chainId: 59141,
       blockConfirmations: 6,

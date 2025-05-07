@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ethers } from "ethers";
-import ConnectWallet from "./components/ConnectWallet";
 import DonationsManage from "./components/DonationsManage";
 import DonationHome from "./components/DonationHome";
 import "./App.css";
